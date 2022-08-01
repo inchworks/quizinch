@@ -30,7 +30,7 @@ func Export(forHost string, toPath string) error {
 
 	for _, s:= range ss {
 		// read bytes
-		sb, err := Files.ReadFile(s.Name())
+		sb, err := Files.ReadFile(filepath.Join(forHost, s.Name()))
 		if err != nil {
 			return err
 		}

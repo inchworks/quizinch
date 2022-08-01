@@ -34,12 +34,12 @@ import (
 
 // version and copyright
 const (
-	version = "0.4.2"
+	version = "0.4.3"
 	notice  = `
 	Copyright (C) Rob Burke inchworks.com, 2020.
 	This website software comes with ABSOLUTELY NO WARRANTY.
 	This is free software, and you are welcome to redistribute it under certain conditions.
-	For details see the license on https://github.com/inchworks/quiz.
+	For details see the license on https://github.com/inchworks/quizinch.
 `
 )
 
@@ -59,6 +59,7 @@ func main() {
 	if test != "" {
 		quiz.CertPath = filepath.Join(test, filepath.Base(quiz.CertPath))
 		quiz.MediaPath = filepath.Join(test, filepath.Base(quiz.MediaPath))
+		quiz.SetupPath = filepath.Join(test, filepath.Base(quiz.SetupPath))
 		quiz.SitePath = filepath.Join(test, filepath.Base(quiz.SitePath))
 	}
 
