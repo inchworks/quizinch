@@ -1,0 +1,50 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{define "monitor"}}
+<!doctype html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <meta name="viewport" content="width=device-width">
+        
+        <title>{{template "title" .}} - QuizInch</title>
+        {{block "pagemeta" .}}
+        {{end}}
+
+        <link rel='stylesheet' href='/static/css/quiz-02.css'>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+        <script type="text/javascript" src='/static/js/jquery-3.6.0.min.js'></script>
+        
+        {{block "favicons" .}}
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+            <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+            <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+            <link rel="manifest" href="/static/images/site.webmanifest">
+            <link rel="mask-icon" href="/static/images/safari-pinned-tab.svg" color="#019fcb">
+            <meta name="msapplication-TileColor" content="#ffc40d">
+            <meta name="msapplication-config" content="/static/images/browserconfig.xml">
+            <meta name="theme-color" content="#0050a2">
+        {{end}}
+    </head>
+    <body>
+        {{template "monitorPage" .}}
+        {{template "monitorScripts" .}}
+    </body>
+</html>
+{{end}}
+
+{{define "monitorScripts"}}
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+	    gblInterval = {{.Interval}};
+		gblToken = {{.CSRFToken}};
+	</script>
+    <script type="text/javascript" src='/static/js/monitor-01.js'></script>
+{{end}}

@@ -1,0 +1,44 @@
+{{define "answer"}}
+
+    {{if eq .Type "T"}}
+
+		<li class="slide">{{ .Answer }}</li>
+
+    {{else if eq .Type "P"}}
+
+        <li class="slide single">
+            <p></p>
+            <img src="/media/{{.File}}" />
+        </li>
+        <li class="slide single">
+            <h4>{{.Answer}}</h4>
+        </li>
+
+    {{else if eq .Type "V"}}
+
+        <li class="slide single av">
+            <p></p>
+            <div class="video-container">
+                <video class="playable" controls src="/media/{{ .File }}">
+                    Video needs conversion to be shown.
+                </video>
+            </div>
+        </li>
+        <li class="slide single">
+			<h4>{{.Answer}}</h4>
+        </li>  
+
+    {{else if eq .Type "A"}}
+
+        <li class="slide single av">
+            <div class="audio-container">
+                <audio class="playable" controls src="/media/{{ .File }}">Device cannot play!</audio>
+            </div>
+        </li>
+        <li class="slide">
+			<h4>{{.Answer}}</h4>
+        </li>
+
+    {{end}}
+
+{{end}}

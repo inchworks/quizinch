@@ -1,0 +1,55 @@
+{{template "deck" .}}
+
+{{define "slides"}}
+
+<section class="slide">
+	<div class="tick">{{.Tick}}</div>
+	
+	<h2 class="scores">{{.Title}}</h2>
+	
+	<table class="quizScores">
+		<tr>
+			<th>Team</th>
+			<th>Score</th>
+		</tr>
+		
+		{{range .ScoresByRound}}
+			<tr class="slide">
+				<td>{{.Name}}</td>
+				<td>{{.Value}}</td>
+			</tr>
+		{{end}}
+		
+	</table>
+	
+</section>
+
+<section class="slide">
+	<div class="tick">{{.Tick}}</div>
+
+	<h2 class="scores">Leaderboard - Round {{.ScoredTo}}</h2>
+		
+	<div class="slide">
+	<table class="quizScores">
+		<tr>
+			<th>Team</th>
+			<th>Total</th>
+			<th>Position</th>
+		</tr>
+		
+		{{range .ScoresByRank}}
+			<tr>
+				<td>{{.Name}}</td>
+				<td>{{.Total}}</td>
+				<td>{{.Rank}}</td>
+			</tr>
+		{{end}}
+		
+	</table>
+	</div>
+
+</section>
+
+{{template "break" .}}
+
+{{end}}

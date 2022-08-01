@@ -1,0 +1,126 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Setup Questions{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/setup-quiz">Setup</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Setup {{ .Title }} Round</h2>
+
+		<form action='/setup-questions' method='POST'>
+			<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+        	<input type='hidden' name='nRound' value='{{.NRound}}'>
+        	<input type='hidden' name='timestamp' value='{{.Form.Get "timestamp"}}'>
+
+			<h3>Questions</h3>
+
+			<div id='formChildren'>
+				{{range .Children}}
+					<div class='childForm' {{ .ChildStyle }}>
+						<input type='hidden' name='index' value='{{ .ChildIndex }}'>								
+						<div class="row mb-2">
+							<div class="col-md-2">
+								<label class="form-label">Quiz order</label>
+								<input type='number' name='quizOrder' class='form-control {{.ChildValid "quizOrder"}}' placeholder='Order' value='{{ .QuizOrder }}'>
+								<div class='invalid-feedback'>{{.ChildError "quizOrder"}}</div>
+							</div>
+							<div class="col-md-10">
+								<label class="form-label">Question</label>
+								<textarea name='question' class='form-control {{.ChildValid "question"}}' placeholder='Question'>{{ .Question }}</textarea>
+								<div class='invalid-feedback'>{{.ChildError "question"}}</div>
+							</div>
+						</div>
+						<div class="col-md-10 offset-md-2 mb-2 media">
+							<label class="form-label">Audio-Visual</label>
+							<input type='hidden' class="mediaName" name='mediaName' value='{{ .MediaName }}'>
+							<div class="input-group">
+								<input class='form-control upload-input {{.ChildValid "media"}} {{.ChildValid "mediaName"}}' type='file' accept='audio/*,image/*,video/*'>
+								<span class='input-group-text'>{{.MediaName}}</span>  
+   							</div>
+							<div class='invalid-feedback bad-file'>{{.ChildError "mediaName"}}</div>
+						</div>
+						<div class="row mb-2 upload" style='display:none'>
+							<div class="offset-md-2 col-md-7 progress">
+								<div class="progress-bar" style="width:50%; height:100%"></div>
+							</div>
+							<div class='col-md-3 alert upload-status'>{{ .ChildError "media"}}</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-2 mt-auto">
+								<a href="#" class="btn btn-secondary btnConfirmDelChild">Delete</a>
+							</div>
+							<div class="col-md-10">
+								<label class="form-label">Answer</label>
+								<textarea name='answer' class='form-control {{.ChildValid "answer"}}' placeholder='Answer'>{{ .Answer }}</textarea>
+								<div class='invalid-feedback'>{{.ChildError "answer"}}</div>
+							</div>
+						</div>
+					</div>
+				{{end}}
+			</div>
+
+			<div class="row mb-2">
+				<div class="col-md-3">
+					<a href="#" class="btn btn-secondary btnAddChild">Add Question</a>
+				</div>
+			</div>
+			<div class="row mb-2">
+				<div class="col-md-3">
+					<input type='submit' class="btn btn-primary" value='Save Round' id='submit'>
+				</div>
+			</div>
+
+		</form>
+
+		<p>Note: Files are uploaded immediately, but you must click the Save Round button to save your changes.</p>
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+   <script type="text/javascript" src='/static/js/multiforms-02.js'></script>
+   <script type="text/javascript" src='/static/js/upload-03.js'></script>
+   <script>
+		// page-specific processing
+
+		function childAdded($prototype, $newForm) {
+
+			// add change handler (not copied with prototype, it seems)
+			$newForm.find(".upload-input").on("change", function() {
+				uploadFile($(this), {{.CSRFToken}}, {{.MaxUpload}}, {{.Form.Get "timestamp"}}, $("#submit"));
+			});
+
+			// increment QuizOrder in prototype
+			$f = $prototype.find(".quizOrder");
+			$f.val(Number($f.val())+1);
+		}
+
+		function pageReady() {
+			// Set name of file, and upload on select
+
+			$(".upload-input").on("change", function() {
+				uploadFile($(this), {{.CSRFToken}}, {{.MaxUpload}}, {{.Form.Get "timestamp"}}, $("#submit"));
+			});
+
+			// Disable button on submit, in attempt to stop duplicate submissions
+			$("form").submit(function() {
+  				$(this).find("button[type='submit']").prop("disabled", true);
+			});
+		}
+
+		function confirmAsk($child) {
+			return 'Delete question \"' + $child.find('input[name="quizOrder"]').val() + '\"?';
+		}
+
+    </script>
+{{end}}

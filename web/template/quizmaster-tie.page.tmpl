@@ -1,0 +1,56 @@
+{{template "deck" .}}
+
+{{define "slides"}}
+
+	<section class="slide">
+		<div class="tick">{{.Tick}}</div>
+
+		<h2 class="scores">R{{.ScoredTo }} {{.Title}} - Tie Break<span style="padding-left:40px">{{.ReadyTo}}</h2>
+			
+		<table class="quizScores">
+			<tr>
+				<th>Team</th>
+				<th>R{{.ScoredTo}}</th>
+				<th>Total</th>
+				<th>Position</th>
+			</tr>
+			
+			{{range .ScoresTop}}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Value }}</td>
+					<td>{{ .Total }}</td>
+					<td>{{ .Rank }}</td>
+				</tr>
+			{{end}}
+			
+		</table>
+	</section>
+
+	<section class="slide">
+		<div class="tick">{{.Tick}}</div>
+		
+		<h2 class="scores">R{{ .ScoredTo }} {{ .Title }} <span style="padding-left:40px">{{ .ReadyTo }}</span></h2>
+		
+		<table class="quizScores">
+			<tr>
+				<th>Team</th>
+				<th>R{{ .ScoredTo }}</th>
+				<th>Total</th>
+				<th>Position</th>
+				</tr>
+			
+			{{range .ScoresByRound}}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Value }}</td>
+					<td>{{ .Total }}</td>
+					<td>{{ .Rank }}</td>
+					</tr>
+			{{end}}
+			
+		</table>
+	
+	</section>
+
+{{end}}

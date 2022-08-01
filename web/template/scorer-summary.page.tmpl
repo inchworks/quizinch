@@ -1,0 +1,51 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Summary{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Summary</h2>
+
+		<table class="scoreSummary">
+			{{/* headings */}}
+			<tr>
+				<th>Revise round -></th>
+				{{range .Rounds}}
+					<th><a class="btn btn-outline-primary" href="/edit-scores/{{ .N }}">{{ .Txt }}</a></th>
+				{{end}}
+				<th>Total</th>
+				<th>Position</th>
+			</tr>
+			
+			{{/* teams */}}
+			{{range .Scores}}
+				<tr>
+					<td>{{ .Name }}</td>
+				
+					{{/* scores */}}
+					{{range $score := .Rounds }}
+						<td>{{ $score }}</td>
+					{{end}}
+				
+					<td>{{ .Total }}</td>
+					<td>{{ .Rank }}</td>
+					</tr>
+			{{end}}
+			
+		</table>
+		
+		<div><a class="btn btn-primary" href="/scorers">Back</a></div>
+	</div>		
+{{end}}

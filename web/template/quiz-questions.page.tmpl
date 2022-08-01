@@ -1,0 +1,20 @@
+{{template "deck" .}}
+
+{{define "slides"}}
+
+	<section class="slide">
+		<h2>{{ .Title }}</h2>
+		<div>
+			<ul>
+			{{range .Slides}}
+				{{range .Questions}}
+					{{template "question" .}}
+				{{end}}
+			{{end}}
+			</ul>
+		</div>
+	</section>
+
+	{{template "break" .}}
+	
+{{end}}

@@ -1,0 +1,75 @@
+/* headings */
+
+h2.scores {
+	text-align : center;
+	font-size: 1.25em;
+  	font-weight: bold;
+  	margin-bottom: .30435em;
+  	text-align: center;
+}
+
+h2.start {
+	text-align : center;
+	font-size: 2.5em;
+}
+
+h3.wait {
+	text-align : center;
+	font-size:1em;
+}
+
+/* tables */
+
+.quizScores {
+	width:600px;
+	margin: 0px auto;
+	border-collapse: collapse;
+    border-bottom: 0.5em solid LightGray;
+  	font-size: 1em;
+}
+
+.quizScores th {
+	background-color: LightGray;
+}
+	
+
+.quizScores td {
+    border-top: 1px solid LightGray;
+    border-bottom: 1em 28px;
+}
+
+/* misc */
+
+.tick {
+	float : right;
+	margin-top : 12px;
+	font-size: 20px;
+	color: grey;
+} 
+
+/* always show navigation buttons on controller display, if present  */
+
+.controller .deck-prev-link, .controller .deck-next-link {
+  display: block !important;
+ }
+
+/* extra spacing for newlines in questions */
+
+br {
+	display: block;		/* makes it have a width */
+	content: "";		/* clears default height */
+	margin-top: 4px;	/* extra height */
+}
+
+/* audio controls, video */
+
+.audio-container {
+	display: flex;
+	justify-content: right;
+	align-items: center 
+ }
+ .video-container {
+	display: flex;
+	justify-content: center;
+	align-items: center 
+ }

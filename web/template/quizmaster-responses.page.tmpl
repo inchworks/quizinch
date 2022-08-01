@@ -1,0 +1,29 @@
+{{template "deck" .}}
+
+{{define "slides"}}
+
+	<section class="slide">
+		<div class="tick">{{ .Tick }}</div>
+		
+		<h2 class="scores">Quizmaster : R{{ .NRound }} Answers <span style="padding-left:40px">{{ .ReadyTo }}</span></h2>
+		
+		<table class="quizScores">
+			<tr>
+				<th>Team</th>
+				<th>Total</th>
+				<th>Position</th>
+				<th>Answers</th>
+			</tr>
+			
+			{{range .Teams}}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Total }}</td>
+					<td>{{ .Rank }}</td>
+					<td>{{ teamStatus .Responded }}</td>
+				</tr>
+			{{end}}
+		</table>
+	</section>
+
+{{end}}

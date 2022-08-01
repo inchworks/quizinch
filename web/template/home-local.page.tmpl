@@ -1,0 +1,57 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Home{{end}}
+
+{{define "pagemenu"}}
+	<li class="nav-item"><a class="nav-link" href="/controller">Controller</a></li>
+	<li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+	<li class="nav-item"><a class="nav-link" href="/displays">Displays</a></li>
+	{{template "menu-admin" .}}
+{{end}}
+
+{{define "page"}}
+   <div class="container">
+        <header> 
+            <span class="banner">{{block "banner" .}}{{.Organiser}}{{end}}</span>
+        </header>
+    </div>
+
+   <div class="container">
+		<p>Welcome to this QuizInch system.</p>
+		<p>To setup the quiz:<p>
+			<ol>
+				<li>Select the Admin > Setup tab.</li>
+				<li>Set the quiz title, organiser and other parameters.</li>
+				<li>Add the team names.</li>
+				<li>Add the round names.</li>
+				<li>Set the questions, with answers, for each round.</li>
+			</ol>
+		</p>
+
+		<p>To run the quiz:</p>
+			<ol>
+				<li>Connect this system to the main digital projector. Select the Controller tab.</li>
+				<li>Connect another PC or tablet to this system, open a web browser, and select the Scorers tab. Use it to enter scores.</li>
+				<li>If required, select the Displays tab on a third device and use the Quizmaster button to show a preview of scores to the quizmaster.</li>
+				<li>You can also use the Displays tab to show a replica of the main display on another projector, or to show a separate scoreboard.</li>
+			</ol>
+		</p>
+
+		<p>You may also use any PC or tablet as the controller, and connect the main projector as replica display on another device.</p>
+
+		<p>QuizInch - Copyright © 2020 Rob Burke.</p>
+		<p>This website software comes with ABSOLUTELY NO WARRANTY.
+		This is free software, and you are welcome to redistribute it under certain conditions.
+		For details see the source code on <a href="https://github.com/inchworks/quizinch">github.com/inchworks/quizinch</a>.</p>
+
+		<p>Server version: {{ .Val }}.</p>
+	</div>
+{{end}}

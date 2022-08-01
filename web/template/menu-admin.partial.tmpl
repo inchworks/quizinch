@@ -1,0 +1,25 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{define "menu-admin"}}
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-expanded="false">Admin</a>
+        <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="background-color: #ccc;">
+            <li><a class="dropdown-item" href="/setup-quiz">Setup</a></li>
+            {{if .IsOnline}}
+                <li><a class="dropdown-item" href="/edit-users">Users</a></li>
+                <li><div class="dropdown-divider"></div></li>
+                <li><a class="dropdown-item" href="/usage-days">Days</a></li>
+                <li><a class="dropdown-item" href="/usage-months">Months</a></li>
+            {{end}}
+            <li><div class="dropdown-divider"></div></li>
+			<li><a class="dropdown-item" href="/monitor-displays">Monitor Displays</a></div>
+		</div>
+        </ul>
+    </li>
+{{end}}

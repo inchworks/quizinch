@@ -1,0 +1,40 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Displays{{end}}
+
+{{define "pagemenu"}}
+	<li class="nav-item"><a class="nav-link" href="/displays">Displays</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Displays</h2>
+	
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-primary" href="/scoreboard-start/Q/0">Quizmaster</a></div>
+			<div class="col-md-9">Current scores, for quizmaster, updated at the start of each round of answers.
+				Teams are shown with the lowest score first. Press SPACEBAR to see teams sorted by rank.
+				Or use arrow keys for forward and backwards.
+				On a tablet, touch the display to see buttons at the sides of the display.</div>
+		</div>
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-primary" href="/quiz-start/R/0">Replica display</a></div>
+			<div class="col-md-9">Questions, answers, and scores. Synchronised with the controller's display.</div>
+		</div>
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-primary" href="/scoreboard-start/S/0">Scoreboard</a></div>
+			<div class="col-md-9">Current round scores and leaderboard. Updated in step with controller's display.</div>
+		</div>
+		<div class="row my-3">
+			<p>Press ESC (or Q or X) to quit a display.</p>
+		</DIV>
+	</div>	
+{{end}}

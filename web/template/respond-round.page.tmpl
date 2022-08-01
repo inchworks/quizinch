@@ -1,0 +1,68 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Answers{{end}}
+
+{{define "pagemenu"}}
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>{{ .Team }}</h2>
+		<h3>{{ .Round }}</h3>
+
+		<form action='/respond-round' method='POST'>
+			<input type='hidden' name='csrf_token' value='{{ .CSRFToken }}'>
+			<input type='hidden' name='access' value='{{ .Access }}'>
+			<input type='hidden' name='nTeam' value='{{ .NTeam }}'>
+			<input type='hidden' name='nRound' value='{{ .NRound }}'>
+
+			<div id='formChildren'>
+				{{range .Children}}
+					<div class='childForm' {{ .ChildStyle }}>
+						<input type='hidden' name='index' value='{{ .ChildIndex }}'>								
+						<div class="row">
+							<div class="col-md-1">
+								<label class="form-label">{{ itemNumber .ChildIndex }}</label>
+							</div>
+							<div class="col-md-11">
+								<div>{{ .Question }}</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-11 offset-md-1">
+								<textarea name='value' class='form-control {{.ChildValid "value"}}'>{{ .Value.String }}</textarea>
+								<div class='invalid-feedback'>{{.ChildError "value"}}</div>
+							</div>
+						</div>
+					</div>
+				{{end}}
+			</div>
+
+			<div class="row">
+				<div class="col-md-3">
+					<input type='submit' class="btn btn-primary" value='Save Answers' id='submit'>
+				</div>
+			</div>
+
+		</form>
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+   <script type="text/javascript" src='/static/js/multiforms-02.js'></script>
+   <script>
+		// page-specific processing
+		function childAdded($prototype, $newForm) {}
+		function pageReady() {}
+
+		function confirmAsk($child) {}
+    </script>
+{{end}}

@@ -1,0 +1,45 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Scorers{{end}}
+
+{{define "pagemenu"}}
+	<li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Scorers</h2>
+		
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-primary" href="/scorer-rounds">Score Rounds</a></div>
+			<div class="col-md-9">View and score answers from teams.</div>
+		</div>
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-primary" href="/scorer-summary">Summary</a></div>
+			<div class="col-md-9">View and revise published scores. Use this to correct any errors.</div>
+		</div>
+		<div class="row my-3">
+			<div class="col-md-3"><a class="btn btn-secondary" href="/score-round/{{ .Val }}">Override Round {{ .Val }}</a></div>
+			<div class="col-md-9">Use this only for offline teams.</div>
+		</div>
+		<form action='/publish-round' method='POST'>
+			<input class="form-control" type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+			<input class="form-control" type='hidden' name='from' value='S'>
+			<input class="form-control" type='hidden' name='nRound' value='{{ .Val }}'>
+			<div class="row my-3">
+				<div class="col-md-3">
+						<button class="btn btn-secondary">Publish Override {{ .Val }}</button>
+				</div>
+				<div class="col-md-9">Advance to next round, only if there are offine teams.</div>
+			</div>
+		</form>
+	</div>	
+{{end}}

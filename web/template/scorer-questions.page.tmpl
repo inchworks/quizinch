@@ -1,0 +1,50 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Scorer - Round Questions{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+    <li class="nav-item"><a class="nav-link" href="/scorer-rounds">Rounds</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Round {{ .NRound}} : {{ .Title }}</h2>
+		<p>This page will update automatically if scores are entered by another scorer.
+		If it doesn't, please view each question individually.</p>
+		{{range .Questions}}
+			<div class="row my-2">
+				<div class="col-md-1">{{ .QuizOrder }}</div>
+				<div class="col-md-7">{{ .Question.Question }}</div>
+				<div class="col-md-2 {{.Alert}}">{{ .Status }}</div>
+				<div class="col-md-2">
+					<a class="btn {{.Btn}}" href="/score-question/{{.Id}}">Score</a>
+				</div>
+			</div>
+		{{end}}
+
+		<form action='/publish-round' method='POST'>
+			<input class="form-control" type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+			<input class="form-control" type='hidden' name='from' value='R'>
+			<input class="form-control" type='hidden' name='nRound' value='{{ .NRound }}'>
+			<div class="row mt-3">
+				<div class="col-md-8 offset-md-1">Allow scores to be displayed, and advance to next round.</div>
+				<div class="col-md-3">
+					<button class="btn btn-secondary">Publish Round {{ .NRound }}</button>
+				</div>
+			</div>
+		</form>
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+	{{template "js-controller" .}}
+{{end}}

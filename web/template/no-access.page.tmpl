@@ -1,0 +1,25 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}No Access{{end}}
+
+{{define "page"}}
+	<div class="container">
+		{{if .IsLive}}
+			<h2>No Access to Quiz</h2>
+			<p>Your link to join the quiz has not been recognised.
+			Please check that you copied it accurately from the invitation message you received fron {{ .Organiser }}.</p>
+		{{else}}
+			<h2>Quiz Not Ready</h2>
+			<p>The quiz is not online yet.
+			Please try later using the link in your invitation message from {{ .Organiser }}.</p>
+		{{end}}
+	</div>	
+{{end}}

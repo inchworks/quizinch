@@ -1,0 +1,119 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Setup{{end}}
+
+{{define "pagemenu"}}
+	{{template "menu-admin" .}}
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Setup</h2>
+
+		<form action='/setup-quiz' method='POST'>
+			<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+
+			<div class="col-md-8 mb-3">
+				<label class='form-label'>Title</label>
+				<input type='text' name='title' class='form-control {{.Errors.Valid "title"}}' value='{{.Get "title"}}'>
+				{{with .Errors.Get "title"}}
+					<div class='invalid-feedback'>{{.}}</div>
+				{{end}}
+			</div>
+			<div class="col-md-8 mb-3">
+				<label class='form-label'>Organiser</label>
+				<input type='text' name='organiser' class='form-control {{.Errors.Valid "organiser"}}' value='{{.Get "organiser"}}'>
+				{{with .Errors.Get "organiser"}}
+					<div class='invalid-feedback'>{{.}}</div>
+				{{end}}
+			</div>
+			<div class="row mb-3">
+				<div class="col-md-4">
+					<label class='form-label'>No. of tie-breaker rounds</label>
+					<input type='number' name='nTieBreakers' class='form-control {{.Errors.Valid "nTieBreakers"}}' value='{{.Get "nTieBreakers"}}'>
+					{{with .Errors.Get "nTieBreakers"}}
+						<div class='invalid-feedback'>{{.}}</div>
+					{{end}}
+				</div>
+				<div class="col-md-4">
+					<label class='form-label'>Final scores: no. of teams shown</label>
+					<input type='number' name='nFinalScores' class='form-control {{.Errors.Valid "nFinalScores"}}' value='{{.Get "nFinalScores"}}'>
+					{{with .Errors.Get "nFinalScores"}}
+						<div class='invalid-feedback'>{{.}}</div>
+					{{end}}
+				</div>
+				<div class="col-md-4">
+					<label class='form-label'>Defer answers</label>
+					<input type='number' name='nDeferred' class='form-control {{.Errors.Valid "nDeferred"}}' value='{{.Get "nDeferred"}}'>
+					{{with .Errors.Get "nDeferred"}}
+						<div class='invalid-feedback'>{{.}}</div>
+					{{end}}
+				</div>
+			</div>
+			{{if .IsOnline}}
+				<div class="col-md-8 mb-3">
+					<label class='form-label'>Access Code</label>
+					<input type='text' name='access' class='form-control {{.Errors.Valid "access"}}' value='{{.Get "access"}}'>
+					{{with .Errors.Get "access"}}
+						<div class='invalid-feedback'>{{.}}</div>
+					{{end}}
+				</div>
+			{{else}}
+				<input type='hidden' name='access' value='{{.Get "access"}}'>
+			{{end}}
+			<div class="col-md-4 mb-3">
+				<label class='form-label'>Display refresh level</label>
+				<input type='number' name='refresh' class='form-control {{.Errors.Valid "refresh"}}' value='{{.Get "refresh"}}' aria-describedby="accessHelp">
+				<small id="accessHelp" class="form-text text-muted">
+  					0 = 500ms, 1 = 1s, 2 = 2s, 3 = 4s, 4 = 8s, etc.
+				</small>
+				{{with .Errors.Get "refresh"}}
+					<div class='invalid-feedback'>{{.}}</div>
+				{{end}}
+			</div>
+			<div class="col-md-2 mb-3">
+					<input type='submit' class="btn btn-primary" value='Save Quiz' id='submit'>
+			</div>
+		</form>
+
+		<h3>Teams</h3>
+
+		<div class="row my-3">
+			<div class="col-md-2"><a class="btn btn-secondary" href="/setup-teams">Teams</a></div>
+			<div class="col-md-10">Add, modify and remove teams.</div>
+		</div>
+		{{if .HasRemote}}
+			{{range .Teams}}
+				<div class="row my-3">
+					<div class="offset-md-2 col-md-3">{{ .Name }}</div>
+					<div class="col-md-5">{{ .URL }}</div>
+				</div>
+			{{end}}
+		{{end}}
+
+		<h3>Rounds</h3>
+		
+		<div class="row my-3">
+			<div class="col-md-2"><a class="btn btn-secondary" href="/setup-rounds">Rounds</a></div>
+			<div class="col-md-10">Add, modify and remove rounds.</div>
+		</div>
+
+		{{range .Rounds}}
+			<div class="row my-3">
+				<div class="col-md-2"><a class="btn btn-secondary" href="/setup-questions/{{ .QuizOrder }}">Round {{ .QuizOrder }}</a></div>
+				<div class="col-md-10">{{ .Title }}</div>
+			</div>
+		{{end}}
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+{{end}}

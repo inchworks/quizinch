@@ -1,0 +1,30 @@
+{{template "deck" .}}
+
+{{define "slides"}}
+
+	<section class="slide">
+		<div class="tick">{{ .Tick }}</div>
+		
+		<h2>Quizmaster <span style="padding-left:40px">{{ .ReadyTo }}</span></h2>	
+
+		<table class="quizScores">
+			<tr>
+				<th>Team</th>
+				<th></th>
+				<th></th>
+				<th></th>
+				</tr>
+			
+			{{ range .Teams }}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					</tr>
+			{{end}}
+		</table>
+		
+	</section>
+
+{{end}}

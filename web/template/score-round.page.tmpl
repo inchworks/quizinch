@@ -1,0 +1,71 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Score Round{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Round {{ .Round }}</h2>
+
+		<form action='/{{ .Action }}' method='POST'>
+			<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+			<input type='hidden' name='nRound' value='{{ .Round }}'>								
+
+			<div id='formChildren'>
+				{{range .Children}}
+					<div class='childForm' {{ .ChildStyle }}>
+						<input type='hidden' name='index' value='{{ .ChildIndex }}'>								
+						<div class="row">
+							<label class="col-md-4 col-form-label">{{ .Name }}</label>
+							<div class="col-md-2">
+								<input type='text' name='score' class='form-control {{.ChildValid "score"}}' value='{{ .Score }}'>
+							</div>
+							<div class='col-md-4 invalid-feedback'>{{.ChildError "score"}}</div>
+						</div>
+					</div>
+				{{end}}
+			</div>
+			<div class="row">
+				<div class="col-md-2">
+					<input type='submit' class="btn btn-primary" value='Save' id='submit'>
+				</div>
+			</div>
+		</form>
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+    <script>
+		// validate score
+		$('input[name="score"]').change(function () {
+			var v = $( this ).val();
+			var e;
+			if (v == "") {
+				e = "";  // no value yet
+			}
+			else if (isNaN(v)) {
+				e = "not a score!";
+			}
+			else { 
+				if (v < 0)
+					e = "negative score!";
+				else if (v > 99)
+					e = "huge score!";
+				else
+					e = "";  // ok
+			}
+			$( this ).closest(".row").find(".invalid-feedback").text(e);
+		});
+    </script>
+{{end}}

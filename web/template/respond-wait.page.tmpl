@@ -1,0 +1,38 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Answers - Please Wait{{end}}
+
+{{define "pagemenu"}}
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>{{ .Team }}</h2>
+
+		<p>This page will change automatically to enter your answers.
+		If it doesn't, please select the round below:</p>
+		{{$access := .Access}}
+		{{$puppet := .Puppet}}
+		{{$team := .NTeam}}
+		{{range .Rounds}}
+			<div class="row my-3">
+				<div class="col-md-5">{{ .Title }}</div>
+				<div class="col-md-3">
+					<a class="btn btn-secondary" href="/respond-round/{{$access}}/{{$team}}/{{.QuizOrder}}">Answers</a>
+				</div>
+			</div>
+		{{end}}
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+	{{template "js-controller" .}}
+{{end}}

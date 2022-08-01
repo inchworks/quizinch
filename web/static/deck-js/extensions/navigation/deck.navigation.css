@@ -1,0 +1,55 @@
+/* RB: increased size of nav buttons */ 
+
+.deck-prev-link, .deck-next-link {
+  display: none;
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -16px;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 48px;
+  vertical-align: middle;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background: #888;
+  border-radius: 24px;
+}
+.deck-prev-link:hover, .deck-prev-link:focus, .deck-prev-link:active, .deck-prev-link:visited, .deck-next-link:hover, .deck-next-link:focus, .deck-next-link:active, .deck-next-link:visited {
+  color: #fff;
+}
+
+/* RB: increased spacing to to nav buttons */
+
+.deck-prev-link {
+  left: 60px;
+}
+
+.deck-next-link {
+  right: 60px;
+}
+
+.deck-container:hover .deck-prev-link, .deck-container:hover .deck-next-link {
+  display: block;
+}
+
+/* RB: removed because it kills nav buttons on iPad in Safari and Chrome. Touch device detection isn't safe on recent browsers.
+.touch .deck-container:hover .deck-prev-link, .touch .deck-container:hover .deck-next-link {
+  display: none;
+}
+*/
+
+.deck-container:hover .deck-prev-link.deck-nav-disabled, .deck-container:hover .deck-next-link.deck-nav-disabled {
+  display: none;
+}
+
+
+
+@media print {
+  .deck-prev-link, .deck-next-link {
+    display: none !important;
+  }
+}

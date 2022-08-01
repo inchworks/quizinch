@@ -1,0 +1,82 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Setup Teams{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/setup-quiz">Setup</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Setup Teams</h2>
+		
+		<form action='/setup-teams' method='POST'>
+			<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+
+			<div id='formChildren'>
+				{{range .Children}}
+					<div class='childForm' {{ .ChildStyle }}>
+						<input type='hidden' name='index' value='{{ .ChildIndex }}'>								
+						<div class="row mb-2">
+							<div class="col-md-5">
+								<label class="form-label visually-hidden">Name</label>
+								<input type='text' name='name' class='form-control {{.ChildValid "name"}}' placeholder='Name' value='{{ .Name }}'>
+								<div class='invalid-feedback'>{{.ChildError "name"}}</div>
+							</div>
+							{{if $.HasRemote}}
+								<div class="col-md-5">
+									<label class="form-label visually-hidden">Access Code</label>
+									<input type='text' name='access' class='form-control {{.ChildValid "access"}}' placeholder='Access Code' value='{{ .Access }}'>
+									<div class='invalid-feedback'>{{.ChildError "access"}}</div>
+								</div>
+							{{else}}
+								<input type='hidden' name='access' value='{{ .Access }}'>
+							{{end}}
+							<div class="col-md-2">
+								<a href="#" class="btn btn-secondary btnConfirmDelChild">Delete</a>
+							</div>
+						</div>
+					</div>
+				{{end}}
+			</div>
+
+			<div class="row">
+				{{if .HasRemote}}
+				<div class="offset-md-8 col-md-2">
+					<a href="#" class="btn btn-secondary btnAddChild">Add Team</a>
+				</div>
+				{{else}}
+					<div class="offset-md-5 col-md-2">
+						<a href="#" class="btn btn-secondary btnAddChild">Add Team</a>
+					</div>
+			{{end}}
+			</div>
+			<div class="row">
+				<div class="col-md-2">
+					<input type='submit' class="btn btn-primary" value='Save Teams' id='submit'>
+				</div>
+			</div>
+		</form>
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+   <script type="text/javascript" src='/static/js/multiforms-02.js'></script>
+   <script>
+		// page-specific processing
+		function childAdded($prototype, $newForm) {}
+		function pageReady() {}
+
+		function confirmAsk($child) {
+			return 'Delete \"' + $child.find('input[name="name"]').val() + '\"?';
+		}
+    </script>
+{{end}}

@@ -1,0 +1,37 @@
+{{/*
+  Copyright © Rob Burke inchworks.com, 2020.
+
+  Copying and distribution of this file, with or without modification, are permitted in any
+  medium without royalty, provided the copyright notice and this notice are preserved.
+  This file is offered as-is, without any warranty.
+*/}}
+
+{{template "quiz" .}}
+
+{{define "title"}}Scorer - Wait{{end}}
+
+{{define "pagemenu"}}
+    <li class="nav-item"><a class="nav-link" href="/scorers">Scorers</a></li>
+{{end}}
+
+{{define "page"}}
+	<div class="container">
+		<h2>Score Rounds</h2>
+		<p>This page will update automatically, as answers are available from teams.
+		If it doesn't, please select each round below, once the round has ended.</p>
+		{{range .Rounds}}
+			<div class="row my-2">
+				<div class="col-md-4">{{ .Title }}</div>
+				<div class="col-md-3 {{.Alert}}">{{ .Status }}</div>
+				<div class="col-md-2">
+					<a class="btn {{.Btn}}" href="/scorer-questions/{{.QuizOrder}}">Score</a>
+				</div>
+			</div>
+		{{end}}
+
+	</div>
+{{end}}
+
+{{ define "pagescripts" }}
+	{{template "js-controller" .}}
+{{end}}

@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+
+  db:
+    image: mariadb:10.4
+    container_name: quiz_db
+    expose:
+      - 3306
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root-test-only
+      MYSQL_DATABASE: quiz
+      MYSQL_USER: server
+      MYSQL_PASSWORD: test-only
+    volumes:
+      - mysql:/var/lib/mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50k"
+        max-file: "10"
+  
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - 9080:8080
+
+  server:
+    build: app/.
+    image: inchworks/quiz:latest
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+    environment:
+      domains: ""
+      db-source: tcp(quiz_db:3306)/quiz
+      db-password: test-only
+      admin-name: admin@example.com
+      admin-password: admin-test-only
+      test: "true"
+    volumes:
+      - ./media:/media
+      - ./site:/site
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50k"
+        max-file: "10"
+    depends_on:
+      - db
+
+volumes:
+  mysql:
