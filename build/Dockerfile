@@ -1,5 +1,5 @@
 FROM --platform=$BUILDPLATFORM golang:1.18 AS builder
-LABEL maintainer="<support@picinch.com>"
+LABEL maintainer="<support@quizinch.com>"
 WORKDIR /quiz
 COPY go.mod go.sum ./
 RUN go mod download
