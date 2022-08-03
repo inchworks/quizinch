@@ -1,5 +1,5 @@
 # QuizInch
-This application enables the synchronised presentation of questions, answers and scores for a live quiz. 
+QuizInch enables the synchronised presentation of questions, answers and scores for a live quiz. 
 
 At a minimum it needs two computers:
 - A laptop or Raspberry Pi connected to the digital projector at a venue, runnning the QuizInch server.
