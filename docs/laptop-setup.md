@@ -19,6 +19,6 @@ A basic installation requires the addition of just one file on the server.
 
 ## After setup
 If needed, you can customize the quiz system:
-[&#8658; Customisation]({{ site.baseurl }}{% link customise.md %})
+[&#8658; Customisation]({{ site.baseurl }}{% link install-4-customise.md %})
 
 [1]:    https://docs.docker.com/desktop/

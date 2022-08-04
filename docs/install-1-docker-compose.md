@@ -26,7 +26,7 @@ services:
         max-file: "5"
 
   quiz:
-    image: inchworks/quiz:latest-arm64
+    image: inchworks/quiz:latest
     ports:
       - 80:8000
     restart: always
@@ -50,7 +50,7 @@ volumes:
 ```
 
 Edit the example to change the following items. (Take care to keep indentation unchanged when editing. Do not use tabs.)
-- `MY_SQL_ROOT_PASWORD`
+- `MY_SQL_ROOT_PASSWORD`
 - `MYSQL_PASSWORD` and `db-password` Make them the same.
 
 If you intend to change many other QuizInch configuration settings, you may prefer to omit the environment settings here, and set them in a site/configuration.yml file instead. See [configuration.yml]({{ site.baseurl }}{% link configuration.yml.md %})

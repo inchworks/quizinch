@@ -47,7 +47,7 @@ Each time it is run, QuzInch creates the files needed to configure the quiz appl
 
 ## After setup
 If needed, you can customize the quiz system:
-[&#8658; Customisation]({{ site.baseurl }}{% link customise.md %})
+[&#8658; Customisation]({{ site.baseurl }}{% link install-4-customise.md %})
 
 
 [1]:	https://www.raspberrypi.com/documentation/computers/getting-started.html#setting-up-your-raspberry-pi
