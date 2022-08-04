@@ -6,14 +6,14 @@
 
 - Install Docker and Docker Compose. Check [docs.docker.com][2] for the latest instructions. At the time of writing, this was the recommended method:
 
-```sh
-cd ~/.
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo groupadd docker
-sudo usermod -aG docker $USER
-newgrp docker
-```
+    ```sh
+    cd ~/.
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo groupadd docker
+    sudo usermod -aG docker $USER
+    newgrp docker
+    ```
 
 You can check that Docker is installed successfully by: `sudo docker run hello-world`.
 
@@ -36,23 +36,21 @@ QuizInch supplies the files needed to dedicate a Raspberry Pi as an appliance. T
 Each time it is run, QuzInch creates the files needed to configure the quiz appliance in `/src/quizinch/setup`. However, because these files change the behavior of the RPi, you must copy them to the appropriate locations yourself. 
 
 5. These files enable the RPi to host a WiFi network:
-
-```
-cd /srv/quizinch/setup
-mv etc-dhcpcd-client.conf /etc/dhcpcd-client.conf
-mv etc-dhcpcd-hostap.conf /etc/dhcpcd-hostap.conf
-mv etc-dnsmasq.conf /etc/dnsmasq.conf
-mv etc-hostapd-hostapd.conf /etc/hostapd/hostapd.conf
-```
+    ```sh
+    cd /srv/quizinch/setup
+    mv etc-dhcpcd-client.conf /etc/dhcpcd-client.conf
+    mv etc-dhcpcd-hostap.conf /etc/dhcpcd-hostap.conf
+    mv etc-dnsmasq.conf /etc/dnsmasq.conf
+    mv etc-hostapd-hostapd.conf /etc/hostapd/hostapd.conf
+    ```
 
 1. These files start the RPi as an appliance with a menu to configure operation.
-
-```sh
-cd /srv/quizinch/setup
-mv home-dot-bashrc ~/.bashrc
-mv home-dot-xinitrc ~/.xinitrc
-mv home-quiz-menu ~/quiz-menu.sh
-```
+    ```sh
+    cd /srv/quizinch/setup
+    mv home-dot-bashrc ~/.bashrc
+    mv home-dot-xinitrc ~/.xinitrc
+    mv home-quiz-menu ~/quiz-menu.sh
+    ```
 
 ## After setup
 If needed, you can customize the quiz system:
