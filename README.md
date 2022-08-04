@@ -22,6 +22,9 @@ The system does not need an internet connection.
 
 Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. 
 
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+Beta version expected on Docker Hub by mid-August.
+
 _It has been used and refined over a number of years to manage a Primary Schools Quiz for a Rotary Club. If you are thinking of using it, I suggest you contact me at support@quizinch.com._
 
 For more information, including setup and configuration, see https://quizinch.com.
