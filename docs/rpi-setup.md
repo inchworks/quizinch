@@ -1,5 +1,4 @@
 # Raspberry Pi Appliance
-(Explain terminal and commands.)
 
 ## Before installation
 - Set up a Raspberry Pi 4 or 400 with the current version of Raspberry Pi OS. See [raspberrypi.com][1].
@@ -32,9 +31,6 @@ A basic installation requires the creation of just one file on the server.
 [&#8658; Customisation]({{ site.baseurl }}{% link install-4-customise.md %})
 
 1. Connect to your server at `http://localhost/` using a web browser and view the home page for the quiz system.
-
-1. Setup your quiz:
-[&#8658; Setup a Quiz]({{ site.baseurl }}{% link install-6-quiz.md %})
 
 [1]:	https://www.raspberrypi.com/documentation/computers/getting-started.html#setting-up-your-raspberry-pi
 [2]:    [https://docs.docker.com/engine/install/debian/]

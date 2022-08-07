@@ -1,4 +1,4 @@
-## Step 5: Customise your system
+## Step 4: Customise your system
 Add files in `/srv/quizinch/site/` to customise your installation. You must restart the service for changes to take effect.
 
 ### Graphics
