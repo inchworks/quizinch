@@ -1,14 +1,13 @@
 ## Quiz Features
 
-A quiz is divided into a number of rounds. Additional tie-break and sudden-death rounds may be specified.
-Questions can include pictures, audio and video clips.
+A quiz is divided into a number of rounds, with questions include pictures, audio and video clips. Additional tie-break and sudden-death rounds may be specified.
 
 Teams are assumed to write their answers on papers which are handed to a scorer. Scoring can be deferred by one or more rounds, so that scores are entered while the next round is in progress.
 
 The system assumes three roles:
-- A quizmaster, who engages with the quiz competitors and the audience.
-- A scorer, who enters the scores for each round into the system.
-- A controller, who operates the system, stepping through the display of questions, answers and scores.
+1. A quizmaster, who engages with the quiz competitors and the audience.
+1. A scorer, who enters the scores for each round into the system.
+1. A controller, who operates the system, stepping through the display of questions, answers and scores.
 
 The system supports multiple synchronised displays:
 - The main display shows a sequence of questions, answers and team scores on a digital projector. Typically, this display is connected to the computer running the quiz server.

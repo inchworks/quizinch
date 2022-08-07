@@ -15,6 +15,3 @@ To pull updated images from Docker Hub:
 1. Restart the service.
 
 For new features, check Docker Hub for an `inchworks/quizinch` image tagged `1.0`, `1.1`, `2.0` etc, and edit `docker-compose.yml` to match. A different major version number for QuizInch indicates that configuration changes will be needed.
-
-## Database
-If you wish to delete all quiz content and start again, stop the server, delete `/srv/quizinch/mysql` and `/srv/quizinch/media`, and restart the server.

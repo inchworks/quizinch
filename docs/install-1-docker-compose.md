@@ -1,5 +1,6 @@
 # Step 1: docker-compose.yml
-Copy this example, and save it in `/srv/quizinch` on your server.
+
+Copy this example, and save it as `docker-compose.yml` in the server directory.
 
 ```yml
 version: '3'
