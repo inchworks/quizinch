@@ -75,9 +75,3 @@ td.clientName { width: 80px; }
 td.periodR { background-color:red; }
 td.periodA { background-color:#FFBF00;}
 td.periodG { background-color:green; }
-
-/* IE10+ rubbish */
-/* Do this because IE doesn't even recognise object-fit: scale-down as valid */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-.ie-image { object-fit: contain; }
-}

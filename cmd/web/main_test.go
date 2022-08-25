@@ -91,7 +91,7 @@ func init() {
 	flag.StringVar(&params.url, "url", "http://localhost:8000", "Server URL")
 	flag.IntVar(&params.nRounds, "rounds", 10, "Number of normal rounds")
 	flag.IntVar(&params.nTieBreakers, "ties", 2, "Number of tie breaker rounds")
-	flag.IntVar(&params.nTeams, "teams", 13, "Number of teams")
+	flag.IntVar(&params.nTeams, "teams", 12, "Number of teams")
 	flag.IntVar(&params.rate, "rate", 2, "Delay between updates (seconds)")
 }
 

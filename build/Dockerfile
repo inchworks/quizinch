@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.18 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.19 AS builder
 LABEL maintainer="<support@quizinch.com>"
 WORKDIR /quiz
 COPY go.mod go.sum ./
@@ -14,7 +14,7 @@ RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -a -installsuffix c
 FROM --platform=$TARGETPLATFORM alpine
 RUN apk --no-cache add ca-certificates ffmpeg
 
-# Copy image and templates from previous stage
+# Copy image from previous stage
 COPY --from=builder /quiz/quiz /app/
 
 # Startup command
