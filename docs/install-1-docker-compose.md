@@ -27,7 +27,7 @@ services:
         max-file: "5"
 
   quiz:
-    image: inchworks/quiz:latest
+    image: inchworks/quizinch:latest
     ports:
       - 80:8000
     restart: always

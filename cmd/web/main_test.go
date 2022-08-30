@@ -85,13 +85,13 @@ var params struct {
 	rate         int
 }
 
-func init() {
+func getParams() {
 
 	// command line flags
-	flag.StringVar(&params.url, "url", "http://localhost:8000", "Server URL")
+	flag.StringVar(&params.url, "url", "http://quiz.local", "Server URL")
 	flag.IntVar(&params.nRounds, "rounds", 10, "Number of normal rounds")
 	flag.IntVar(&params.nTieBreakers, "ties", 2, "Number of tie breaker rounds")
-	flag.IntVar(&params.nTeams, "teams", 12, "Number of teams")
+	flag.IntVar(&params.nTeams, "teams", 8, "Number of teams")
 	flag.IntVar(&params.rate, "rate", 2, "Delay between updates (seconds)")
 }
 
@@ -172,6 +172,8 @@ func TestController(t *testing.T) {
 // TestPuppets steps through all slides on a live server.
 // It enables a multi-display load test, assuming puppet displays have been opened in real browser windows.
 func TestPuppets(t *testing.T) {
+
+	getParams()
 
 	// site configuration, with just environment variables
 	cfg := &quiz.Configuration{}

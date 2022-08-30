@@ -11,7 +11,6 @@ time, mark, audio, video {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 100%;
   font: inherit;
   vertical-align: baseline;
 }
@@ -193,7 +192,7 @@ a:link {
 
 /* End HTML5 Boilerplate adaptations */
 h1 {
-  font-size: 4.5em;
+  font-size: 8vw;
 }
 
 h1, .vcenter {
@@ -227,7 +226,7 @@ h1, .vcenter {
 }
 
 h2 {
-  font-size: 1.75em;
+  font-size: 6vw;
   font-weight: bold;
   padding-top: .5em;
   margin: 0 0 .66666em 0;
@@ -235,26 +234,26 @@ h2 {
 }
 
 h3 {
-  font-size: 1.75em;
+  font-size: 5vw;
   font-weight: bold;
   margin-bottom: .30435em;
   text-align: center;
 }
 
 h4 {
-  font-size: 1.25em;
+  font-size: 4vw;
   margin-bottom: .25em;
   text-align: center;
 }
 
 h5 {
-  font-size: 1.125em;
+  font-size: 3vw;
   font-weight: bold;
   margin-bottom: .2222em;
 }
 
 h6 {
-  font-size: 1em;
+  font-size: 2vw;
   font-weight: bold;
 }
 
@@ -296,7 +295,7 @@ li > ol, li > ul {
 }
 
 .deck-container {
-  font-size: 48px;
+  font-size: 3vw;
   line-height: 1.25;
   color: #444;
 }
@@ -329,7 +328,7 @@ code {
 }
 
 blockquote {
-  font-size: 2em;
+  font-size: 2vw;
   font-style: italic;
   padding: 1em 2em;
   color: #000;
@@ -339,7 +338,7 @@ blockquote p {
   margin: 0;
 }
 blockquote cite {
-  font-size: .5em;
+  font-size: 1vw;
   font-style: normal;
   font-weight: bold;
   color: #888;
@@ -407,7 +406,7 @@ a:hover, a:focus {
 */
 
 .deck-status {
-  font-size: 0.6666em;
+  font-size: 3vw;
 }
 
 .deck-menu .slide {

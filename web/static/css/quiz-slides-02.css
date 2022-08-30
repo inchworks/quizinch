@@ -2,7 +2,7 @@
 
 h2.scores {
 	text-align : center;
-	font-size: 1.25em;
+	font-size: 4vw;
   	font-weight: bold;
   	margin-bottom: .30435em;
   	text-align: center;
@@ -10,12 +10,12 @@ h2.scores {
 
 h2.start {
 	text-align : center;
-	font-size: 2.5em;
+	font-size: 6vw;
 }
 
 h3.wait {
 	text-align : center;
-	font-size:1em;
+	font-size: 3vw;
 }
 
 /* tables */
@@ -25,7 +25,7 @@ h3.wait {
 	margin: 0px auto;
 	border-collapse: collapse;
     border-bottom: 0.5em solid LightGray;
-  	font-size: 1em;
+  	font-size: 3vw;
 }
 
 .quizScores th {
