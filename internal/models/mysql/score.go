@@ -62,14 +62,20 @@ const (
 	scoreWhereTeamAndRound = scoreSelect + ` WHERE team = ? and round = ?`
 	scoresWhereCompleted   = scoreSelect + ` WHERE team = ? and round <= ?`
 
-	scoresWhereRound = ` WHERE round = ? AND team.quiz = ?
-	`
+	scoresWhereRound = ` WHERE round = ? AND team.quiz = ?`
 	scoresWhereRoundAndRank = ` WHERE round = ? AND rank <= ? AND team.quiz = ?`
 
-	scoresByAscendingRank  = scoresWithTeam + scoresWhereRound + scoreOrderRankAsc
+	scoresByAscendingRank  = scoresWithTeam + scoresWhereRoundAndRank + scoreOrderRankAsc
 	scoresByDescendingRank = scoresWithTeam + scoresWhereRoundAndRank + scoreOrderRankDesc
 	scoresByOrder          = scoresWithTeam + scoresWhereRound + scoreOrderAscending
 	scoresByName           = scoresWithTeam + scoresWhereRound + scoreOrderName
+
+	teamsByAscendingRank = `
+		SELECT team.*, COALESCE(score.score, 0) AS value FROM team
+		LEFT JOIN score ON score.team = team.id AND score.round = ?
+		WHERE rank <= ? AND team.quiz = ?
+		ORDER BY team.rank ASC, team.name
+	`
 )
 
 type ScoreStore struct {
@@ -126,27 +132,40 @@ func (st *ScoreStore) ForRoundByTeam(nRound int) []*models.TeamScore {
 		return nil
 	}
 	return scores
-
 }
 
-// Scores for round, in rank order, with teams
+// Scores for round, in rank order, including unscored with teams.
+// Low rank teams are omitted.
 
-func (st *ScoreStore) ForRoundByRank(nRound int) []*models.TeamScore {
+func (st *ScoreStore) ForRoundByRank(nRound int, nTop int) []*models.TeamScore {
 
 	var scores []*models.TeamScore
 
-	if err := st.DBX.Select(&scores, scoresByAscendingRank, nRound, st.QuizId); err != nil {
+	if err := st.DBX.Select(&scores, teamsByAscendingRank, nRound, nTop, st.QuizId); err != nil {
 		st.logError(err)
 		return nil
 	}
 	return scores
-
 }
 
 // Top ranked, in descending rank (reverse order), with teams
 // Low rank and unscored teams are omitted.
 
 func (st *ScoreStore) ForRoundByReverseRank(nRound int, nTop int) []*models.TeamScore {
+
+	var scores []*models.TeamScore
+
+	if err := st.DBX.Select(&scores, scoresByDescendingRank, nRound, nTop, st.QuizId); err != nil {
+		st.logError(err)
+		return nil
+	}
+	return scores
+}
+
+// Top ranked, in descending rank (reverse order), with teams
+// Low rank and unscored teams are omitted.
+
+func (st *ScoreStore) ForRoundByReverseRank0(nRound int, nTop int) []*models.TeamScore {
 
 	var scores []*models.TeamScore
 
@@ -168,7 +187,6 @@ func (st *ScoreStore) ForRoundByScore(nRound int) []*models.TeamScore {
 		return nil
 	}
 	return scores
-
 }
 
 // Single score, may not exist

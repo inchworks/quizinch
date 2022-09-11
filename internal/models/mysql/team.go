@@ -60,7 +60,12 @@ const (
 				WHERE question.round = ? AND response.team = team.id
 		)
 	`
-
+	teamsScoredWithScores = `
+		SELECT team.*, score.score as value FROM team
+			INNER JOIN score ON score.team = team.id AND score.round = ?
+			WHERE team.quiz = ?
+			ORDER BY value DESC
+		`
 	teamsWithResponded = `
 		SELECT
 			team.*,
@@ -125,6 +130,27 @@ func (st *TeamStore) All() []*models.Team {
 		return nil
 	}
 	return teams
+}
+
+// AllScoredWithScores returns scored teams, with unpublished round scores, in descending score order.
+// (For publishing. Needs whole team record, for update.)
+func (st *TeamStore) AllScoredWithScores(nRound int) []*models.TeamScore {
+
+	var teamScores []*models.TeamScore
+	var err error
+
+	// may be called after updating scores in a transaction
+	if *st.ptx != nil {
+		err = (*st.ptx).Select(&teamScores, teamsScoredWithScores, nRound, st.QuizId)
+	} else {
+		err = st.DBX.Select(&teamScores, teamsScoredWithScores, nRound, st.QuizId)
+	}
+
+	if err != nil {
+		st.logError(err)
+		return nil
+	}
+	return teamScores
 }
 
 // AllWithResponses returns all teams, with total response scores for a round.

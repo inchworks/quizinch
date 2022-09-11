@@ -5,7 +5,7 @@ show_menu () {
     width=50
     menu_height=4
 
-    ip_addrs=$(ip -o addr show up primary scope global | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
+    ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
 
     # dialog preferred to Debian's whiptail, because it has timeout and allows exit code redefinition.
     # The "3>&1 1>&2 2>&3" mess switches STDOUT and STDERR because dialog sends its output to STDERR :-(.
@@ -32,6 +32,8 @@ show_menu () {
             3>&1 1>&2 2>&3)
     ec=$?
 }
+
+sleep 10
 
 while true; do
     clear

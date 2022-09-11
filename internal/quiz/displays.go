@@ -68,7 +68,7 @@ func (d *DisplayState) displayLeaderboard(nRound int, puppet string) *dataScores
 
 	// teams sorted by overall rank, up to previous round
 	scoreStore := d.app.ScoreStore
-	scoresRanked := scoreStore.ForRoundByRank(nRound - 1)
+	scoresRanked := scoreStore.ForRoundByRank(nRound - 1, d.app.NTeams)
 
 	return &dataScores{
 		Title:        round.Title,
@@ -186,11 +186,11 @@ func (d *DisplayState) displayRound(puppet string, nRound int, forQuestions bool
 // Omits unscored teams on a tie-break round.
 //
 // Data returned includes
-//  - scores for last completed round, ordered by team rank
 //  - scores for last completed round, ordered by score for round (lowest first)
-//  - scores for top teams in reverse order (optionally)
+//  - scores for last completed round, ordered by team rank
+//  - scores for top teams in reverse order (on final rounds)
 
-func (d *DisplayState) displayScores(nRound int, top bool, puppet string) *dataScores {
+func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dataScores {
 
 	// serialisation
 	if puppet == DisplayController {
@@ -205,34 +205,36 @@ func (d *DisplayState) displayScores(nRound int, top bool, puppet string) *dataS
 		return nil
 	}
 
+	// limit scores to top teams on final full round
+	var nTop int
+	if final {
+		nTop = d.app.quizState.quizCached.NFinalScores
+	} else {
+		nTop = d.app.NTeams
+	}
+	tieBreak := nRound > d.app.quizState.nFullRounds
+
 	// teams sorted by round score
 	scoreStore := d.app.ScoreStore
 	scoresRound := scoreStore.ForRoundByScore(nRound)
 
-	// teams sorted by ranked scores, not valid on a tie break
-	var tieBreak bool
-	var scoresRanked []*models.TeamScore
-
-	if d.contest.CurrentRound <= d.app.quizState.nFullRounds {
-		tieBreak = false
-		scoresRanked = scoreStore.ForRoundByRank(nRound)
-	} else {
-		tieBreak = true
-	}
+	// teams sorted by ranked scores
+	scoresRanked := scoreStore.ForRoundByRank(nRound, nTop)
 
 	// top teams in reverse order
-	var nScores int
 	var scoresTop []*models.TeamScore
-
-	if top {
-		scoresTop = scoreStore.ForRoundByReverseRank(nRound, d.app.quizState.quizCached.NFinalScores)
-		nScores = len(scoresTop)
-	} else {
-		nScores = d.app.NTeams
+	if final {
+		if tieBreak {
+			// tie break teams needn't be at the top
+			nTop = d.app.NTeams
+		}
+		scoresTop = scoreStore.ForRoundByReverseRank(nRound, nTop)
 	}
 
 	// leaderboard slide index (for puppet scoreboard).
 	if puppet == DisplayController {
+		nScores := len(scoresRanked)
+
 		if d.contest.CurrentRound < d.app.quizState.nFullRounds {
 			d.contest.LeaderboardIndex = nScores + 2 // heading + scores + heading + leaderboard - 1
 		} else {

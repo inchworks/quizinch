@@ -12,7 +12,6 @@
 			<tr>
 				<th>Team</th>
 				<th>Round</th>
-				<th>Total</th>
 				<th>Position</th>
 			</tr>
 		
@@ -21,7 +20,29 @@
 				<tr class="slide">
 					<td>{{.Name}}</td>
 					<td>{{.Value}}</td>
-					<td>{{.Total}}</td>
+					<td>{{.Rank}}</td>
+				</tr>
+			{{end}}
+		
+		</table>
+	</section>
+
+	<section class="slide">
+		<div class="tick">{{.Tick}}</div>
+
+		<h2 class="scores">Leaderboard</h2>
+
+		<table class="quizScores">
+			{{/* headings */}}
+			<tr>
+				<th>Team</th>
+				<th>Position</th>
+			</tr>
+		
+			{{/* teams */}}
+			{{range .ScoresByRank}}
+				<tr>
+					<td>{{.Name}}</td>
 					<td>{{.Rank}}</td>
 				</tr>
 			{{end}}

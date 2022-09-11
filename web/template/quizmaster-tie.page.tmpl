@@ -5,7 +5,7 @@
 	<section class="slide">
 		<div class="tick">{{.Tick}}</div>
 
-		<h2 class="scores">R{{.ScoredTo }} {{.Title}} - Tie Break<span style="padding-left:40px">{{.ReadyTo}}</h2>
+		<h2 class="scores">R{{.ScoredTo }} {{.Title}}<span style="padding-left:40px">{{.ReadyTo}}</h2>
 			
 		<table class="quizScores">
 			<tr>
@@ -28,29 +28,25 @@
 	</section>
 
 	<section class="slide">
-		<div class="tick">{{.Tick}}</div>
+		<div class="tick">{{ .Tick }}</div>
 		
-		<h2 class="scores">R{{ .ScoredTo }} {{ .Title }} <span style="padding-left:40px">{{ .ReadyTo }}</span></h2>
+		<h2 class="scores">R{{ .ScoredTo }} Leaderboard <span style="padding-left:40px">{{ .ReadyTo }}</span></h2>
 		
 		<table class="quizScores">
 			<tr>
 				<th>Team</th>
-				<th>R{{ .ScoredTo }}</th>
-				<th>Total</th>
 				<th>Position</th>
-				</tr>
+			</tr>
 			
-			{{range .ScoresByRound}}
+			{{range .ScoresByRank}}
 				<tr>
 					<td>{{ .Name }}</td>
-					<td>{{ .Value }}</td>
-					<td>{{ .Total }}</td>
 					<td>{{ .Rank }}</td>
-					</tr>
+				</tr>
 			{{end}}
 			
 		</table>
-	
+		
 	</section>
 
 {{end}}

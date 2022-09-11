@@ -89,6 +89,24 @@ func (q *QuizState) Begin() func() {
 
 func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 
+	// ranking algorithm depends on round type
+	if nRound <= qs.nFullRounds {
+		qs.calcOnFullRound(nRound, s)
+	} else {
+		qs.calcOnTieBreak(nRound, s)
+	}
+
+	// make changes visible to quizmaster (and later to scoreboard)
+	if nRound != s.QuizmasterRound {
+		s.QuizmasterRound = nRound
+	}
+
+	// set revision number for score
+	qs.changedPublished()
+}
+
+// calcOnFullRound performs ranking for all teams, saving the team totals.
+func (qs *QuizState) calcOnFullRound(nRound int, s *models.Contest) {
 	// rank teams by scores
 	rank := 0
 	priorScore := -1.0
@@ -113,14 +131,38 @@ func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 			panic(err)
 		}
 	}
+}
 
-	// make changes visible to quizmaster (and later to scoreboard)
-	if nRound != s.QuizmasterRound {
-		s.QuizmasterRound = nRound
+// calcOnTieBreak performs ranking for scored teams.
+func (qs *QuizState) calcOnTieBreak(nRound int, s *models.Contest) {
+
+	// rank teams by scores
+	rank := 0
+	priorScore := -1.0
+
+	// get round score for each scored team, in order
+	teamScores := qs.app.TeamStore.AllScoredWithScores(nRound)
+	for _, teamScore := range teamScores {
+
+		if rank == 0 {
+			// first team keeps its rank
+			rank = teamScore.Team.Rank
+			priorScore = teamScore.Value
+
+		} else if teamScore.Value != priorScore {
+			// advance rank
+			rank = rank + 1
+			priorScore = teamScore.Value
+		}
+
+		// set new rank for team
+		teamScore.Team.Rank = rank
+
+		// save update
+		if err := qs.app.TeamStore.Update(&teamScore.Team); err != nil {
+			panic(err)
+		}
 	}
-
-	// set revision number for score
-	qs.changedPublished()
 }
 
 // forEditResponses returns the data to set responses.

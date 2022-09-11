@@ -36,7 +36,7 @@ Set the following items as needed. Default values are as shown.
 ## Database
 A database connection is requested with DSN `db-user:db-password@db-source?parseTime=true `. A MariaDB or MySQL database is required.
 
-**db-source** `tcp(quizinch_db:3306)/quizinch`
+**db-source** `tcp(quiz_db:3306)/quizinch`
 
 **db-user** `server`
 
