@@ -204,14 +204,6 @@ func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dat
 	if err != nil {
 		return nil
 	}
-
-	// limit scores to top teams on final full round
-	var nTop int
-	if final {
-		nTop = d.app.quizState.quizCached.NFinalScores
-	} else {
-		nTop = d.app.NTeams
-	}
 	tieBreak := nRound > d.app.quizState.nFullRounds
 
 	// teams sorted by round score
@@ -219,16 +211,24 @@ func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dat
 	scoresRound := scoreStore.ForRoundByScore(nRound)
 
 	// teams sorted by ranked scores
-	scoresRanked := scoreStore.ForRoundByRank(nRound, nTop)
+	nTopTeams := d.app.cfg.TopTeams
+	if nTopTeams <= 0 {
+		nTopTeams = d.app.NTeams
+	}
+	scoresRanked := scoreStore.ForRoundByRank(nRound, nTopTeams)
 
 	// top teams in reverse order
 	var scoresTop []*models.TeamScore
 	if final {
+		// limit round scores to top teams on final full round
+		var nFinal int
 		if tieBreak {
-			// tie break teams needn't be at the top
-			nTop = d.app.NTeams
+			nFinal = d.app.NTeams // tie break need't be for a top team
+		} else {
+			nFinal = d.app.quizState.quizCached.NFinalScores
 		}
-		scoresTop = scoreStore.ForRoundByReverseRank(nRound, nTop)
+
+		scoresTop = scoreStore.ForRoundByReverseRank(nRound, nFinal)
 	}
 
 	// leaderboard slide index (for puppet scoreboard).

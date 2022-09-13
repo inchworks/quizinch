@@ -89,6 +89,7 @@ type Configuration struct {
 	MaxUploadAge    time.Duration `yaml:"max-upload-age" env:"max-upload-age" env-default:"1h"` // maximum time for a round update. Units m or h.
 	MonitorInterval int           `yaml:"monitor-interval" env-default:"5000"`                  // monitor display (mS)
 	SlideItems      int           `yaml:"slide-items" env-default:"10"`                         // default maximum items per slide
+	TopTeams        int           `yaml:"top-teams" env-default:"0"`                            // number of top teams on leaderboard
 
 	// variants
 	Options       []string      `yaml:"options" env:"options" env-default:""`                             // site features: online, remote, RPi
@@ -110,7 +111,7 @@ type OpUpdateRound struct {
 
 // Application struct supplies application-wide dependencies.
 type Application struct {
-	Version	string
+	Version string
 
 	cfg       *Configuration
 	hasRemote bool

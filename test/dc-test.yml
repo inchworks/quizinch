@@ -28,7 +28,7 @@ services:
       - 9080:8080
 
   server:
-    image: inchworks/quiz:latest-arm64
+    image: inchworks/quizinch:latest-arm64
     ports:
       - 8000:8000
     restart: unless-stopped
