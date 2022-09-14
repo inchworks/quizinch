@@ -67,10 +67,11 @@ table.scoreSummary {border-collapse: separate; border-spacing: 30px 10px;}
 table.scoreSummary th { text-align: right; }
 table.scoreSummary th:first-child { text-align: left; }
 table.scoreSummary td { text-align: right; }
-table.scoreSummary td:first-child { text-align: left; }​
+table.scoreSummary td:first-child { text-align: left; }
 
 /* monitor fields */
-.monitor td { width: 80px; text-align: center; }
+table.monitor {border-collapse: separate; border-spacing: 10px 5px;}
+table.monitor td { padding: 0 5px; text-align: center; }
 td.clientName { width: 80px; }
 td.periodR { background-color:red; }
 td.periodA { background-color:#FFBF00;}

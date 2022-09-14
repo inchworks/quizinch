@@ -44,9 +44,9 @@ function monitorLive() {
 
     // seconds since last response
     w = Math.round((Date.now() - $tRep)/1000);
-    if (w < 7)
+    if (w < 6)
         st = "G";
-    else if (w < 12)
+    else if (w < 11)
         st = "A";
     else
         st = "R";
