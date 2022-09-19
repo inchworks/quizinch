@@ -38,6 +38,7 @@ services:
       db-password: test-only
       admin-name: admin@example.com
       admin-password: admin-test-only
+      options: RPi
       test: "true"
     volumes:
       - ./media:/media

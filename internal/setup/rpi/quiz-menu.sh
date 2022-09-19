@@ -6,6 +6,7 @@ show_menu () {
     menu_height=4
 
     ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
+    ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
 
     # dialog preferred to Debian's whiptail, because it has timeout and allows exit code redefinition.
     # The "3>&1 1>&2 2>&3" mess switches STDOUT and STDERR because dialog sends its output to STDERR :-(.
@@ -18,7 +19,7 @@ show_menu () {
             DIALOG_ITEM_HELP=6 \
             dialog \
             --clear \
-            --backtitle "$HOSTNAME $ip_addrs" \
+            --backtitle "$HOSTNAME $ip_addrs $ssid" \
             --title "QuizInch" \
             --nocancel \
             --timeout 30 \
