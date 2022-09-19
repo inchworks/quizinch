@@ -1,4 +1,4 @@
-# Step 1: docker-compose.yml
+# Step 2: docker-compose.yml
 
 Copy this example, and save it as `docker-compose.yml` in the server directory.
 

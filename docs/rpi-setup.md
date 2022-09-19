@@ -18,17 +18,19 @@ You can check that Docker is installed successfully by: `docker run hello-world`
 ## Install QuizInch
 A basic installation requires the creation of just one file on the server.
 
-1. Add `/srv/quizinch/docker-compose.yml`. This Docker Compose file specifies the QuizInch and MariaDB software to be downloaded from Docker Hub, the settings to run them on the host system, and essential application parameters.
+1. Create a directory `/srv/quizinch` for the server.
+
+1. Add `docker-compose.yml` to the server directory. This Docker Compose file specifies the QuizInch and MariaDB software to be downloaded from Docker Hub, the settings to run them on the host system, and essential application parameters.
 [&#8658; Docker Setup]({{ site.baseurl }}{% link install-1-docker-compose.md %})
 
-1. `cd /srv/quizinch` and run `docker compose up -d` When issued the first time, this fetches QuizInch and MariaDB software from Docker Hub, and starts QuizInch. Then QuizInch sets up the quiz database, and creates the directory to hold media files (`/srv/quizinch/media`). QuizInch will be restarted automatically whenever the host system is rebooted.
+1. `cd /srv/quizinch` and run `docker compose up -d`. When issued the first time, this fetches QuizInch and MariaDB software from Docker Hub, and starts QuizInch. Then QuizInch sets up the quiz database, and creates the directory to hold media files (`/srv/quizinch/media`). QuizInch will be restarted automatically whenever the RPi appliance is switched on.
 [&#8658; Commands]({{ site.baseurl }}{% link install-2-commands.md %})
-
-1. Optionally, reconfigure the system with a menu to start the quiz display automatically, and to host a WiFi network.
-[&#8658; Make RPi Appliance]({{ site.baseurl }}{% link install-3-appliance.md %})
 
 1. If needed, you can customize the quiz system:
 [&#8658; Customisation]({{ site.baseurl }}{% link install-4-customise.md %})
+
+1. Optionally, reconfigure the system with a menu to start the quiz display automatically, and to host a WiFi network.
+[&#8658; Make RPi Appliance]({{ site.baseurl }}{% link install-3-appliance.md %})
 
 1. Connect to your server at `http://localhost/` using a web browser and view the home page for the quiz system.
 

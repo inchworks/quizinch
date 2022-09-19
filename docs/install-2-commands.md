@@ -1,5 +1,5 @@
 
-# Step 2: Commands
+# Step 3: Commands
 
 ## Docker
 `docker-compose up -d` When issued the first time, sets up the database, creates the directories to hold media files (in`/srv/quizinch/`), and starts QuizInch. On later invocations, it checks for updates and configuration changes to QuizInch, and restarts it if needed.
