@@ -157,10 +157,17 @@ func (app *Application) postFormScores(w http.ResponseWriter, r *http.Request, e
 	// redisplay form if data invalid
 	if !f.Valid() {
 
+		// round title
+		var title string
+		if round, _ := app.RoundStore.GetByN(nRound); round != nil {
+			title = round.Title
+		}
+
 		app.render(w, r, "score-round.page.tmpl", &scoresFormData{
 			Scores: f,
 			Action: action,
-			Round:  strconv.Itoa(nRound),
+			Round:  nRound,
+			Title:  title,
 		})
 		return
 	}

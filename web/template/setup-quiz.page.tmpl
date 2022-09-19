@@ -80,7 +80,7 @@
 				{{end}}
 			</div>
 			<div class="col-md-2 mb-3">
-					<input type='submit' class="btn btn-primary" value='Save Quiz' id='submit'>
+					<input type='submit' class="btn btn-primary" value='Save Setup' id='submit'>
 			</div>
 		</form>
 
@@ -108,7 +108,7 @@
 
 		{{range .Rounds}}
 			<div class="row my-3">
-				<div class="col-md-2"><a class="btn btn-secondary" href="/setup-questions/{{ .QuizOrder }}">Round {{ .QuizOrder }}</a></div>
+				<div class="col-md-2"><a class="btn btn-outline-secondary" href="/setup-questions/{{ .QuizOrder }}">Round {{ .QuizOrder }}</a></div>
 				<div class="col-md-10">{{ .Title }}</div>
 			</div>
 		{{end}}

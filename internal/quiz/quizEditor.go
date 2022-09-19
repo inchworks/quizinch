@@ -163,7 +163,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 	}
 
 	// re-sequence questions, removing missing or duplicate orders
-	// If two questions have the same order, the later update comes first
+	// If two questions have the same order, the newer question comes first
 	if updated {
 
 		// ## think I have to commit changes for them to appear in a new query
@@ -308,7 +308,8 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 	nSrc := len(rsSrc)
 	nDest := len(rsDest)
 
-	var restart bool
+	restart := false
+	updated := false
 
 	for iSrc < nSrc || iDest < nDest {
 
@@ -316,6 +317,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 			// no more source rounds - delete from destination
 			q.onRemoveRound(tx, rsDest[iDest].Id)
 			restart = true
+			updated = true
 			iDest++
 
 		} else if iDest == nDest {
@@ -323,6 +325,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 			r := rsSrc[iSrc].Round
 
 			q.app.RoundStore.Update(&r)
+			updated = true
 			iSrc++
 			count++
 
@@ -332,6 +335,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 				// source round removed - delete from destination
 				q.onRemoveRound(tx, rsDest[iDest].Id)
 				restart = true
+				updated = true
 				iDest++
 
 			} else if ix == iDest {
@@ -345,6 +349,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 					rDest.Format = rsSrc[iSrc].Format
 
 					q.app.RoundStore.Update(rDest)
+					updated = true
 				}
 				iSrc++
 				iDest++
@@ -357,7 +362,28 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 		}
 	}
 
-	// if round removed, potentially invalidating scores, restart quiz
+	// re-sequence rounds, removing missing or duplicate round numbers
+	// If two rounds have the same order, the newer round comes first.
+	if updated {
+
+		// ## think I have to commit changes for them to appear in a new query
+		q.save()
+
+		rs := q.app.RoundStore.All()
+
+		for ix, r := range rs {
+			nOrder := ix + 1
+			if r.QuizOrder != nOrder {
+
+				// update sequence
+				r.QuizOrder = nOrder
+				q.app.RoundStore.Update(r)
+				restart = true
+			}
+		}
+	}
+
+	// if round removed or round numbers changed, potentially invalidating scores, restart quiz
 	if restart {
 		q.restartQuiz()
 	}

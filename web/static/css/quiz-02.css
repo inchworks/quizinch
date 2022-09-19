@@ -24,6 +24,9 @@ footer { background-color: #ccc; }
   object-fit: scale-down;
 }
 
+/* current uploaded file name */
+.upload-name { margin-right: 20px; }
+
 /* modify upload status */
 .upload-status {
   margin-bottom: 1px;

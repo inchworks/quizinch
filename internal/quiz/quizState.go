@@ -327,6 +327,12 @@ func (q *QuizState) forEditScores(action string, nRound int, token string) *scor
 
 	f := forms.NewScores(make(url.Values), token)
 
+	// round title
+	var title string
+	if round, _ := q.app.RoundStore.GetByN(nRound); round != nil {
+		title = round.Title
+	}
+
 	// scores with team names
 	scores := q.app.TeamStore.AllWithScores(nRound)
 	for i, s := range scores {
@@ -344,7 +350,8 @@ func (q *QuizState) forEditScores(action string, nRound int, token string) *scor
 	return &scoresFormData{
 		Scores: f,
 		Action: action,
-		Round:  strconv.Itoa(nRound),
+		Round:  nRound,
+		Title:  title,
 	}
 }
 

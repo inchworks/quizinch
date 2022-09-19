@@ -16,7 +16,7 @@
 
 {{define "page"}}
 	<div class="container">
-		<h2>Round {{ .Round }}</h2>
+		<h2>Round {{ .Round }} - {{.Title}}</h2>
 
 		<form action='/{{ .Action }}' method='POST'>
 			<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>

@@ -45,7 +45,7 @@ const (
 const (
 	questionSelect = `SELECT * FROM question`
 
-	questionOrder = ` ORDER BY quiz_order`
+	questionOrder = ` ORDER BY quiz_order ASC, id DESC`
 
 	questionWhereId     = questionSelect + ` WHERE id = ?`
 	questionsWhereRound = questionSelect + ` WHERE round = ?` + questionOrder

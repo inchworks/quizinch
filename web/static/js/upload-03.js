@@ -12,10 +12,7 @@ function uploadFile($inp, token, maxUpload, timestamp, $btnSubmit) {
     // disable submit button
     $btnSubmit.prop("disabled", true);
 
-    // show file name in form entry, as confirmation to user ..
-    // $inp.siblings(".upload-label").addClass("selected").html(fileName);
-
-    // and in hidden field, so we can match the image to the slide
+    // sset file name in hidden field, so we can match the image to the slide
     $inp.closest(".media").children(".mediaName").val(fileName);
 
     // clear previous status

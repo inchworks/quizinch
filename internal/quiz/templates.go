@@ -207,7 +207,8 @@ type roundsFormData struct {
 type scoresFormData struct {
 	*forms.Scores
 	Action string
-	Round  string
+	Round  int
+	Title  string
 	dataCommon
 }
 

@@ -45,9 +45,9 @@
 							<label class="form-label">Audio-Visual</label>
 							<input type='hidden' class="mediaName" name='mediaName' value='{{ .MediaName }}'>
 							<div class="input-group">
-								<input class='form-control upload-input {{.ChildValid "media"}} {{.ChildValid "mediaName"}}' type='file' accept='audio/*,image/*,video/*'>
-								<span class='input-group-text'>{{.MediaName}}</span>  
-   							</div>
+								<span class='input-group-text upload-name'>{{.MediaName}}</span>  
+ 								<input class='form-control upload-input {{.ChildValid "media"}} {{.ChildValid "mediaName"}}' type='file' accept='audio/*,image/*,video/*'>
+  							</div>
 							<div class='invalid-feedback bad-file'>{{.ChildError "mediaName"}}</div>
 						</div>
 						<div class="row mb-2 upload" style='display:none'>
