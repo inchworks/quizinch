@@ -18,7 +18,7 @@ You can check that Docker is installed successfully by: `docker run hello-world`
 ## Install QuizInch
 A basic installation requires the creation of just one file on the server.
 
-1. Create a directory `/srv/quizinch` for the server: `sudo mkdir /srv` and `cd /srv && sudo install -d -m 0755 -o pi -g pi quizinch`.
+1. Create a directory `/srv/quizinch` for the server: `sudo install -d -m 0755 -o $USER /srv/quizinch`.
 
 1. Add `docker-compose.yml` to the server directory. This Docker Compose file specifies the QuizInch and MariaDB software to be downloaded from Docker Hub, the settings to run them on the host system, and essential application parameters.
 [&#8658; Docker Setup]({{ site.baseurl }}{% link install-1-docker-compose.md %})
