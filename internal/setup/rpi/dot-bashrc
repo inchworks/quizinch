@@ -118,5 +118,5 @@ fi
 # TERM value = 'linux' when at main non-gui terminal
 # and 'xterm' for a shell launched from the GUI.
 if  [ -z "$SSH_CLIENT" ] &&  [ -z "$SSH_TTY" ] && [ "$TERM" = "linux" ]; then
-    /home/pi/quiz-menu.sh
+    $HOME/quiz-menu.sh
 fi

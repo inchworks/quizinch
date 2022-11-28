@@ -1,4 +1,4 @@
-# Raspberry Pi Appliance
+# Raspberry Pi Setup
 
 ## Before installation
 - Set up a Raspberry Pi 4 or 400 with the current version of Raspberry Pi OS. See [raspberrypi.com][1].
@@ -18,7 +18,7 @@ You can check that Docker is installed successfully by: `docker run hello-world`
 ## Install QuizInch
 A basic installation requires the creation of just one file on the server.
 
-1. Create a directory `/srv/quizinch` for the server.
+1. Create a directory `/srv/quizinch` for the server: `sudo mkdir /srv` and `cd /srv && sudo install -d -m 0755 -o pi -g pi quizinch`.
 
 1. Add `docker-compose.yml` to the server directory. This Docker Compose file specifies the QuizInch and MariaDB software to be downloaded from Docker Hub, the settings to run them on the host system, and essential application parameters.
 [&#8658; Docker Setup]({{ site.baseurl }}{% link install-1-docker-compose.md %})
@@ -35,4 +35,4 @@ A basic installation requires the creation of just one file on the server.
 1. Connect to your server at `http://localhost/` using a web browser and view the home page for the quiz system.
 
 [1]:	https://www.raspberrypi.com/documentation/computers/getting-started.html#setting-up-your-raspberry-pi
-[2]:    [https://docs.docker.com/engine/install/debian/]
+[2]:    https://docs.docker.com/engine/install/debian/

@@ -35,8 +35,9 @@ services:
       db-password: "<server-password>"
       options: "RPi"
     volumes:
-      - /etc/localtime:/etc/localtime:ro 
+      - /etc/localtime:/etc/localtime:ro
       - ./media:/media
+      - ./setup:/setup
       - ./site:/site:ro
     logging:
       driver: "json-file"

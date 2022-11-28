@@ -89,6 +89,7 @@ Photos uploaded are resized to fit these dimensions.
 
 ## Website variants
 Settings to change the operation of the website.
+
 **options** ` `
 - "online" enables HTTPS, user passwords and other security features.
 - "remote" enables online entry of answers by remote teams, and scoring of those answers. "

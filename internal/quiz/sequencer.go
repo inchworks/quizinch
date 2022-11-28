@@ -20,8 +20,6 @@ package quiz
 // Sequencing of quiz slides.
 
 import (
-	"time"
-
 	"inchworks.com/quiz/internal/models"
 )
 
@@ -939,10 +937,10 @@ func (d *DisplayState) updateTick(nSecond int) bool {
 
 	// every 5 seconds, to reduce overhead
 	if nSecond%10 == 0 {
-		s.Tick = time.Now().Format("15:04")
+		s.Tick = "/"
 		return true
 	} else if nSecond%5 == 0 {
-		s.Tick = time.Now().Format("15 04")
+		s.Tick = "\\"
 		return true
 	} else {
 		return false

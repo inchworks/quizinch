@@ -384,8 +384,8 @@ func (q *QuizState) StartQuiz(live bool) string {
 
 	s := q.app.displayState.contest
 
-	// start at round 1
-	s.Tick = "00:00" // no time available until controller starts to send it
+	// no tick available until controller starts to send it
+	s.Tick = "*"
 
 	// select live or practice mode
 	s.Live = live
