@@ -193,28 +193,27 @@ func (q *QuizState) GetScorerRounds() *dataScorerRounds {
 	}
 }
 
-// GetScorerSummary returns round headings and scores for all completed rounds,
-//  ordered by team name.
-//
-// Note that we must calculate totals on the fly, because they aren't stored
-// in the database until the quizmaster is ready to view the current round.
+// GetScorerSummary returns round headings and scores for all completed rounds, ordered by team name.
 func (q *QuizState) GetScorerSummary() *scoreSummaryData {
+
+	// Note that we must calculate totals on the fly, because they aren't stored
+	// in the database until the quizmaster is ready to view the current round.
+	// ## Perhaps it would have been better to extend the database for two sets of scores?
 
 	// serialisation
 	defer q.updatesNone()()
 
-	nRounds := q.nFullRounds
+	nFull := q.nFullRounds
 	completed := q.quizCached.ScoringRound - 1
 
 	var headings []*heading
 	for nRound := 1; nRound <= completed; nRound++ {
 
 		// name for round, adding extra tie-break rounds if needed
-
-		if nRound <= nRounds {
+		if nRound <= nFull {
 			headings = append(headings, &heading{nRound, strconv.Itoa(nRound)})
 		} else {
-			headings = append(headings, &heading{nRound, "Tie " + strconv.Itoa(nRound-nRounds)})
+			headings = append(headings, &heading{nRound, "Tie " + strconv.Itoa(nRound-nFull)})
 		}
 	}
 
@@ -225,34 +224,32 @@ func (q *QuizState) GetScorerSummary() *scoreSummaryData {
 
 		t := &teamScores{Name: team.Name}
 
-		// scores
+		// scores for all completed rounds
 		nRound := 1
 		scores := q.app.ScoreStore.CompletedForTeam(team.Id, completed)
 		for _, score := range scores {
 
+			// could be gaps if separate tie breaks for first and second places
+			addUnscored(&t.Rounds, nRound, score.NRound - 1)
+			nRound = score.NRound
+
 			t.Rounds = append(t.Rounds, score.Value)
-			t.Total += score.Value
-			nRound++
+			if nRound <= nFull {
+				t.Total += score.Value  // total for full rounds only
+			}
+			nRound = score.NRound + 1
 		}
-
-		// add 0 scores for unscored teams in tie-break rounds
-		for nRound <= completed {
-			t.Rounds = append(t.Rounds, 0)
-			nRound++
-		}
-
-		t.Rank = 1
+		// fill column for unscored teams in tie-break
+		addUnscored(&t.Rounds, nRound, completed)
 
 		tScores = append(tScores, t)
 	}
 
-	// ## separate calculation if scorers need rank : $teamScore['rank'];
-
-	// sort the teams by decreasing score
+	// sort the teams by decreasing score on full rounds
 	sort.Slice(tScores,
 		func(i, j int) bool { return tScores[i].Total > tScores[j].Total })
 
-	// add rank, in decreasing score order
+	// set rank, in decreasing score order
 	rank := 0
 	priorScore := -1.0
 	for i, t := range tScores {
@@ -263,6 +260,11 @@ func (q *QuizState) GetScorerSummary() *scoreSummaryData {
 			priorScore = t.Total
 		}
 		t.Rank = rank
+	}
+
+	// add ranks for tie-break rounds
+	for nRound := nFull + 1; nRound <= completed; nRound++ {
+		rankTie(tScores, nRound)
 	}
 
 	// re-sort teams by name
@@ -396,6 +398,42 @@ func (q *QuizState) StartQuiz(live bool) string {
 
 	// first page for controller
 	return pathToPage(`quiz-start`, DisplayController, 0, 0)
+}
+
+// addUnscored sets -1 scores for unscored teams in tie-break rounds (reset to 0 later)
+func addUnscored(scores *[]float64, nRound, toRound int) {
+	for ; nRound <= toRound; nRound++ {
+		*scores = append(*scores, -1)
+	}
+}
+
+// rankTie increase rank for teams that participate in a tie-break round.
+func rankTie(tScores []*teamScores, nRound int) {
+
+	// sort the teams by decreasing score on this round
+	ix := nRound - 1
+	sort.Slice(tScores,
+		func(i, j int) bool { return tScores[i].Rounds[ix] > tScores[j].Rounds[ix] })
+
+	// add rank, in decreasing score order
+	delta := -1
+	priorScore := -1.0
+	for i, t := range tScores {
+
+		s := t.Rounds[ix]
+		if s >= 0 {
+			if s != priorScore {
+				// advance rank
+				delta = i
+				priorScore = s
+			}
+			t.Rank += delta
+
+		} else {
+			// not in this tie - no score
+			t.Rounds[ix] = 0
+		}
+	}
 }
 
 // Restart while serialised

@@ -136,27 +136,24 @@ func (qs *QuizState) calcOnFullRound(nRound int, s *models.Contest) {
 // calcOnTieBreak performs ranking for scored teams.
 func (qs *QuizState) calcOnTieBreak(nRound int, s *models.Contest) {
 
-	// rank teams by scores
-	rank := 0
+	// Note that taking part in a tie-break leaves the rank unchanged for the topmost team(s),
+	// and increases the rank for lower teams. For example, four teams tied in 2nd place might
+	// become ranked 2, 3, 3, 5.
+	delta := -1
 	priorScore := -1.0
 
 	// get round score for each scored team, in order
 	teamScores := qs.app.TeamStore.AllScoredWithScores(nRound)
-	for _, teamScore := range teamScores {
+	for i, teamScore := range teamScores {
 
-		if rank == 0 {
-			// first team keeps its rank
-			rank = teamScore.Team.Rank
-			priorScore = teamScore.Value
-
-		} else if teamScore.Value != priorScore {
+		if teamScore.Value != priorScore {
 			// advance rank
-			rank = rank + 1
+			delta = i
 			priorScore = teamScore.Value
 		}
 
 		// set new rank for team
-		teamScore.Team.Rank = rank
+		teamScore.Team.Rank += delta
 
 		// save update
 		if err := qs.app.TeamStore.Update(&teamScore.Team); err != nil {
