@@ -466,9 +466,10 @@ func (d *DisplayState) slideIndex(puppet string) int {
 
 	case DisplayScoreboard:
 		// synchronised to controller scores page, if showing, otherwise restart
-		if s.CurrentPage == models.PageScores {
+		switch s.CurrentPage {
+		case models.PageFinal, models.PageScores:
 			return s.CurrentIndex
-		} else {
+		default:
 			return s.LeaderboardIndex
 		}
 

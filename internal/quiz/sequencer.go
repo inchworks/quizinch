@@ -197,7 +197,13 @@ func (d *DisplayState) pageBack() RepDisplay {
 
 	case models.PageStatic:
 
-		if nRound != 1 {
+		if d.isSuddenDeath(nRound) {
+			// back to sudden death round
+			route = `quiz-questions`
+			s.CurrentPage = models.PageQuestions
+			d.allowResponses()
+
+		} else if nRound != 1 {
 
 			// assume end of quiz
 			nRound = nRounds + qs.nTieRounds

@@ -451,12 +451,18 @@ that use the API provided by core.
         index = indexOrId;
       }
       /* RB: controller actions on first and last slides */
-      else if ((typeof indexOrId === 'number') && (gblPuppet == "C")) {
-        if (indexOrId < 0)
-          controlStep(-1);
-        else if (indexOrId >= slides.length)
-          controlStep(1);
-        return;
+      else if (typeof indexOrId === 'number') {
+        if (gblPuppet == "C") {
+          if (indexOrId < 0)
+            controlStep(-1);
+          else if (indexOrId >= slides.length)
+            controlStep(1);
+          return;
+        }
+        /* RB: select final puppet slide if index out of range */
+        else if (indexOrId >= slides.length) {
+          index = slides.length -1;
+        }
       }
       /* Id string index, search for it and set integer index */
       else if (typeof indexOrId === 'string') {

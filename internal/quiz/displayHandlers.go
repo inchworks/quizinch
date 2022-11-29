@@ -85,14 +85,22 @@ func (app *Application) quizFinal(w http.ResponseWriter, r *http.Request) {
 	// ## could cache the teams with totals and rank? Perhaps little saving compared to scores
 
 	var template string
-	if puppet == DisplayQuizmaster {
+	switch puppet {
+	case DisplayQuizmaster:
 		if data.TieBreak {
 			template = `quizmaster-tie.page.tmpl`
 		} else {
 			template = `quizmaster-final.page.tmpl`
-
 		}
-	} else {
+
+	case DisplayScoreboard:
+		if data.TieBreak {
+			template = `scoreboard-tie.page.tmpl`
+		} else {
+			template = `scoreboard-final.page.tmpl`
+		}
+
+	default:
 		if data.TieBreak {
 			template = `quiz-tie.page.tmpl`
 		} else {
