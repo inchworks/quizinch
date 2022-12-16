@@ -39,6 +39,8 @@ type Question struct {
 	MediaName string
 }
 
+type ValidTypeFunc func(string) bool
+
 // NewQuestions returns a form to edit questions
 
 func NewQuestions(data url.Values, token string) *Questions {
@@ -73,7 +75,7 @@ func (f *Questions) AddTemplate(nQuestions int) {
 
 // GetQuestions returns the user data as an array of structs.
 // They are sent in the HTML form as arrays of values for each field name.
-func (f *Questions) GetQuestions() (items []*Question, err error) {
+func (f *Questions) GetQuestions(vt ValidTypeFunc) (items []*Question, err error) {
 
 	nItems := f.NChildItems()
 
@@ -89,7 +91,7 @@ func (f *Questions) GetQuestions() (items []*Question, err error) {
 			QuizOrder: f.ChildMin("quizOrder", i, ix, 1),
 			Question:  f.ChildRequired("question", i, ix),
 			Answer:    f.ChildRequired("answer", i, ix),
-			MediaName: f.ChildFile("mediaName", i, ix, validType),
+			MediaName: f.ChildFile("mediaName", i, ix, vt),
 		})
 	}
 
@@ -97,9 +99,4 @@ func (f *Questions) GetQuestions() (items []*Question, err error) {
 	f.Children = items
 
 	return items, nil
-}
-
-func validType(name string) bool {
-	// ## use imaging.FormatFromFilename
-	return true
 }

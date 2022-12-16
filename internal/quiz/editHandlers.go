@@ -124,7 +124,7 @@ func (app *Application) postFormQuestions(w http.ResponseWriter, r *http.Request
 	}
 
 	// questions
-	items, err := f.GetQuestions()
+	items, err := f.GetQuestions(app.validTypeCheck())
 	if err != nil {
 		app.httpBadRequest(w, err)
 		return

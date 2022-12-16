@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 
+	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
 )
 
@@ -201,5 +202,13 @@ func (app *Application) reply(w http.ResponseWriter, v interface{}) {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		// ## Need to send JSON response with error, not a normal HTTP error, instead of panic
 		panic(err)
+	}
+}
+
+// validTypeCheck returns a function to check for acceptable file types
+func (app *Application) validTypeCheck() forms.ValidTypeFunc {
+
+	return func(name string) bool {
+		return app.uploader.MediaType(name) != 0
 	}
 }
