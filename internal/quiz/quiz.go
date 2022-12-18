@@ -79,7 +79,7 @@ type Configuration struct {
 	AdminPassword string `yaml:"admin-password" env:"admin-password" env-default:"<your-password>"`
 
 	// image sizes
-	MaxW      int `yaml:"image-width" env-default:"1600"` // maximum stored image dimensions
+	MaxW      int `yaml:"image-width" env-default:"1920"` // maximum stored image dimensions
 	MaxH      int `yaml:"image-height" env-default:"1200"`
 	ThumbW    int `yaml:"thumbnail-width" env-default:"278"` // thumbnail size
 	ThumbH    int `yaml:"thumbnail-height" env-default:"208"`

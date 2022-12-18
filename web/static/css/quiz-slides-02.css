@@ -13,6 +13,10 @@ h2.start {
 	font-size: 6vw;
 }
 
+h3.start {
+	font-size: 6vw;
+}
+
 h3.wait {
 	text-align : center;
 	font-size: 3vw;
@@ -45,7 +49,11 @@ h3.wait {
 	margin-top : 12px;
 	font-size: 20px;
 	color: grey;
-} 
+}
+
+.logo {
+	margin-top : 20px;
+}
 
 /* always show navigation buttons on controller display, if present  */
 
@@ -68,7 +76,17 @@ br {
 	justify-content: right;
 	align-items: center 
  }
- .video-container {
+
+.picture-container {
+	height: 70vh;
+}
+
+.picture-container img {
+    height: 100%;
+    width: auto;
+}
+
+.video-container {
 	display: flex;
 	justify-content: center;
 	align-items: center 

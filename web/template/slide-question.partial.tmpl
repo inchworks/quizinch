@@ -8,7 +8,9 @@
 
         <li class="slide single">
 		    <h4>{{ .Question }}</h4>
-		    <img src="/media/{{ .File }}" />
+            <div class="picture-container">
+		        <img src="/media/{{ .File }}" />
+            </div>
         </li>
 
     {{else if eq .Type "V"}}

@@ -47,7 +47,7 @@
 							<div class="input-group">
 								<span class='input-group-text upload-name'>{{.MediaName}}</span>  
  								<label class='form-control upload-text {{.ChildValid "mediaName"}}' for='U{{ .ChildIndex }}' role='button'>Choose a photo or video...</label>
-								<input class='upload-input d-none' type='file' accept='audio/*,image/*,video/*'>
+								<input class='upload-input d-none' id='U{{ .ChildIndex }}' type='file' accept='audio/*,image/*,video/*'>
 								<label class='input-group-text upload-label' for='U{{ .ChildIndex }}' role='button'>Browse</label>
   								<div class='invalid-feedback bad-file'>{{.ChildError "mediaName"}}</div>
 							</div>

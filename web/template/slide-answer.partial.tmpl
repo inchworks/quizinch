@@ -7,8 +7,9 @@
     {{else if eq .Type "P"}}
 
         <li class="slide single">
-            <p></p>
-            <img src="/media/{{.File}}" />
+            <div class="picture-container">
+                <img src="/media/{{.File}}" />
+            </div>
         </li>
         <li class="slide single">
             <h4>{{.Answer}}</h4>
