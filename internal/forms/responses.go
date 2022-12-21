@@ -71,7 +71,7 @@ func (f *Responses) GetResponses() (items []*Response, err error) {
 			QuestionResponse: models.QuestionResponse{
 				Value: sql.NullString{
 					Valid:  true,
-					String: f.ChildRequired("value", i, ix),
+					String: f.ChildText("value", i, ix, 0, 128),
 				},
 			},
 		})

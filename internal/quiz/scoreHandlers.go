@@ -89,7 +89,7 @@ func (app *Application) getFormScoreQuestion(w http.ResponseWriter, r *http.Requ
 	app.render(w, r, "score-question.page.tmpl", td)
 }
 
-// postFormScoreQuestion preocesses the form to score all teams on a single question
+// postFormScoreQuestion processes the form to score all teams on a single question
 func (app *Application) postFormScoreQuestion(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
@@ -161,6 +161,12 @@ func (app *Application) postFormScores(w http.ResponseWriter, r *http.Request, e
 		var title string
 		if round, _ := app.RoundStore.GetByN(nRound); round != nil {
 			title = round.Title
+		}
+
+		// team names (not sent with form)
+		teams := app.TeamStore.AllWithScores(nRound)
+		for ix, s := range f.Children {
+			s.Name = teams[ix].Name
 		}
 
 		app.render(w, r, "score-round.page.tmpl", &scoresFormData{

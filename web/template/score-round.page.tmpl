@@ -30,8 +30,8 @@
 							<label class="col-md-4 col-form-label">{{ .Name }}</label>
 							<div class="col-md-2">
 								<input type='text' name='score' class='form-control {{.ChildValid "score"}}' value='{{ .Score }}'>
+								<div class='invalid-feedback'>{{.ChildError "score"}}</div>
 							</div>
-							<div class='col-md-4 invalid-feedback'>{{.ChildError "score"}}</div>
 						</div>
 					</div>
 				{{end}}
@@ -46,26 +46,4 @@
 {{end}}
 
 {{ define "pagescripts" }}
-    <script>
-		// validate score
-		$('input[name="score"]').change(function () {
-			var v = $( this ).val();
-			var e;
-			if (v == "") {
-				e = "";  // no value yet
-			}
-			else if (isNaN(v)) {
-				e = "not a score!";
-			}
-			else { 
-				if (v < 0)
-					e = "negative score!";
-				else if (v > 99)
-					e = "huge score!";
-				else
-					e = "";  // ok
-			}
-			$( this ).closest(".row").find(".invalid-feedback").text(e);
-		});
-    </script>
 {{end}}

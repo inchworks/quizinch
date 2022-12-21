@@ -76,8 +76,8 @@ func (f *Teams) GetTeams() (items []*Team, err error) {
 		items = append(items, &Team{
 			Child: multiforms.Child{Parent: f.Form, ChildIndex: ix},
 			Team: models.Team{
-				Name:   f.ChildRequired("name", i, ix),
-				Access: f.ChildGet("access", i),
+				Name:   f.ChildText("name", i, ix, 1, 60),
+				Access: f.ChildText("access", i, ix, 0, 60),
 			},
 		})
 	}

@@ -68,9 +68,10 @@ func (f *Scores) GetScores() (items []*Score, err error) {
 			return nil, err
 		}
 
+		_, s := f.ChildFloat("score", i, ix, 0, 99, 0.5)
 		items = append(items, &Score{
 			Child: multiforms.Child{Parent: f.Form, ChildIndex: ix},
-			Score: f.ChildGet("score", i),
+			Score: s,
 		})
 	}
 

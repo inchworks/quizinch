@@ -89,8 +89,8 @@ func (f *Questions) GetQuestions(vt ValidTypeFunc) (items []*Question, err error
 		items = append(items, &Question{
 			Child:     multiforms.Child{Parent: f.Form, ChildIndex: ix},
 			QuizOrder: f.ChildMin("quizOrder", i, ix, 1),
-			Question:  f.ChildRequired("question", i, ix),
-			Answer:    f.ChildRequired("answer", i, ix),
+			Question:  f.ChildText("question", i, ix, 2, 512),
+			Answer:    f.ChildText("answer", i, ix, 1, 512),
 			MediaName: f.ChildFile("mediaName", i, ix, vt),
 		})
 	}

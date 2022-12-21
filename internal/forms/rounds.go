@@ -81,8 +81,8 @@ func (f *Rounds) GetRounds() (items []*Round, err error) {
 			Child: multiforms.Child{Parent: f.Form, ChildIndex: ix},
 			Round: models.Round{
 				QuizOrder: f.ChildMin("quizOrder", i, ix, 1),
-				Format:    f.ChildGet("format", i),
-				Title:     f.ChildRequired("title", i, ix),
+				Format:    f.ChildText("format", i, ix, 0, 20),
+				Title:     f.ChildText("title", i, ix, 1, 128),
 			},
 		})
 	}
