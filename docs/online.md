@@ -30,7 +30,7 @@ These instructions assume a Ubuntu Server host with Docker installed. Other Linu
 
 1. Add `/srv/quizinch/configuration.yml`. See the sample [configuration.yml]({{ site.baseurl }}{% link configuration.yml.md %}), which includes all that is necessary for an online server. You must change it to set your own domain name(s) and passwords.
 
-1. In `/srv/quizinch` run `docker compose up -d`. When issued the first time, this fetches QuizInch and MariaDB containers from Docker Hub, and starts QuizInch. Then QuizInchInch sets up the database, creates the directories to hold media and certificates (in`/srv/quizinch/`). QuizInch will be restarted automatically whenever the host system is rebooted.
+1. In `/srv/quizinch` run `docker compose up -d`. When issued the first time, this fetches QuizInch and MariaDB containers from Docker Hub, and starts QuizInch. Then QuizInch sets up the database, creates the directories to hold media and certificates (in`/srv/quizinch/`). QuizInch will be restarted automatically whenever the host system is rebooted.
 [&#8658; Commands]({{ site.baseurl }}{% link install-2-commands.md %})
 
 1. If needed, you can customize the quiz system:

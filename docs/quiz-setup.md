@@ -39,7 +39,8 @@ A question may include a picture, a sound clip, or a video clip for the media. U
 - All other file types are assumed to be pictures. jpg, jpeg, and png are recommended.
 
 ## Changes during the quiz
-You should not make changes during the quiz. However these changes can be made without the quiz restarting:
+You should not make changes during the quiz. However some changes can be made without the quiz restarting:
 - You can delete a team, if they have to leave the quiz.
-- (Is it possible to change a round's name?).
-- (Is it possible to change a question or answer?).
+- You can make a change to a team's name.
+- You can make a change to a round's title.
+- You can change the details of a question or answer, for example to correct an error.
