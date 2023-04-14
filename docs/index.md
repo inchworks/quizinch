@@ -1,4 +1,4 @@
-# QuizInch
+# A System for a Live Quiz
 QuizInch enables the synchronised presentation of questions, answers and scores for a live quiz. 
 
 At a minimum it needs two computers:
