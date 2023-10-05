@@ -3,10 +3,10 @@
 show_menu () {
     height=0
     width=50
-    menu_height=4
+    menu_height=5
 
-    ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
     ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
+    ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
 
     # dialog preferred to Debian's whiptail, because it has timeout and allows exit code redefinition.
     # The "3>&1 1>&2 2>&3" mess switches STDOUT and STDERR because dialog sends its output to STDERR :-(.
@@ -19,7 +19,7 @@ show_menu () {
             DIALOG_ITEM_HELP=6 \
             dialog \
             --clear \
-            --backtitle "$HOSTNAME $ip_addrs $ssid" \
+            --backtitle "WiFi : $ssid, $HOSTNAME website : $ip_addrs" \
             --title "QuizInch" \
             --nocancel \
             --timeout 30 \
@@ -28,8 +28,9 @@ show_menu () {
             1 "Start Quiz program" \
             2 "Restart with QUIZ-RPI WiFi" \
             3 "Restart and join QUIZ-AP WiFi" \
-            4 "Desktop" \
-            5 "Console" \
+            4 "Show network address" \
+            5 "Desktop" \
+            6 "Console" \
             3>&1 1>&2 2>&3)
     ec=$?
 }
@@ -66,11 +67,24 @@ while true; do
         sudo systemctl reboot
         ;;
     4)
+        # show network address
+        ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
+        ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
+        clear
+        echo ""
+        echo ""
+        echo ""
+        echo "        WiFi :" $ssid
+        echo "       " $HOSTNAME "website :" $ip_addrs
+        echo ""
+        read -n 1 -s -r -p "Press any key to continue"
+        ;;
+    5)
         # remove browser and run full desktop
         rm -f ~/.xinitrc
         startx
         ;;
-    5)
+    6)
         # exit to command line console
         clear
         exit
