@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.20 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.21 AS builder
 LABEL maintainer="<support@quizinch.com>"
 WORKDIR /quiz
 COPY go.mod go.sum ./
