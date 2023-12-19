@@ -77,7 +77,7 @@ while true; do
         echo "        WiFi :" $ssid
         echo "       " $HOSTNAME "website :" $ip_addrs
         echo ""
-        read -n 1 -s -r -p "Press any key to continue"
+        read -n 1 -s -r -p "        Press any key to continue"
         ;;
     5)
         # remove browser and run full desktop
