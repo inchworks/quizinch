@@ -54,9 +54,10 @@ type QuizState struct {
 	app             *Application
 	muQuiz          sync.RWMutex
 	rollbackTx      bool
-	publishedUpdate int
-	responseUpdate  int
-	scorerUpdate    int
+	publishedUpdate int // update to published scores
+	responseUpdate  int // update to team responses
+	scorerUpdate    int // update to unpublished scores
+	syncUpdate      int // update to controller synchronisation
 
 	// scoring: round no -> question ID -> scoreStatus
 	scored map[int]map[int64]scoreStatus
@@ -91,9 +92,9 @@ func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 
 	// ranking algorithm depends on round type
 	if nRound <= qs.nFullRounds {
-		qs.calcOnFullRound(nRound, s)
+		qs.calcOnFullRound(nRound)
 	} else {
-		qs.calcOnTieBreak(nRound, s)
+		qs.calcOnTieBreak(nRound)
 	}
 
 	// make changes visible to quizmaster (and later to scoreboard)
@@ -106,7 +107,7 @@ func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 }
 
 // calcOnFullRound performs ranking for all teams, saving the team totals.
-func (qs *QuizState) calcOnFullRound(nRound int, s *models.Contest) {
+func (qs *QuizState) calcOnFullRound(nRound int) {
 	// rank teams by scores
 	rank := 0
 	priorScore := -1.0
@@ -134,7 +135,7 @@ func (qs *QuizState) calcOnFullRound(nRound int, s *models.Contest) {
 }
 
 // calcOnTieBreak performs ranking for scored teams.
-func (qs *QuizState) calcOnTieBreak(nRound int, s *models.Contest) {
+func (qs *QuizState) calcOnTieBreak(nRound int) {
 
 	// Note that taking part in a tie-break leaves the rank unchanged for the topmost team(s),
 	// and increases the rank for lower teams. For example, four teams tied in 2nd place might
@@ -515,6 +516,7 @@ func (qs *QuizState) changedAll() {
 	qs.publishedUpdate = t
 	qs.responseUpdate = t
 	qs.scorerUpdate = t
+	qs.syncUpdate = t
 }
 
 // onConfirmQuestion processes the confirmation of scores for a question.
@@ -564,6 +566,12 @@ func (qs *QuizState) changedResponse() {
 func (qs *QuizState) changedScorer() {
 
 	qs.scorerUpdate = timestamp()
+}
+
+// changedSync notes that the controller must re-synchronise.
+func (qs *QuizState) changedSync() {
+
+	qs.syncUpdate = timestamp()
 }
 
 // timestamp returns a 31 bit timestamp for updates, which is easier to store in Javascript than 64 bit.

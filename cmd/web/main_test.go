@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -49,6 +49,7 @@ type pageGbls struct {
 	page    string
 	param   string
 	index   string
+	sync    string
 	update  string
 	tick    string
 	monitor string
@@ -127,8 +128,8 @@ func TestController(t *testing.T) {
 
 	// logging - errors only
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	infoLog := log.New(ioutil.Discard, "", 0)
-	threatLog := log.New(ioutil.Discard, "", 0)
+	infoLog := log.New(io.Discard, "", 0)
+	threatLog := log.New(io.Discard, "", 0)
 
 	// site configuration, with just environment variables
 	cfg := &quiz.Configuration{}
@@ -220,6 +221,7 @@ func (t *testingController) testNext(nSlide int) {
 	// request next page
 	data := url.Values{}
 	data.Add("next", "1")
+	data.Add("sync", t.gbls.sync)
 	rs := t.post("/control-step", t.gbls.token, data, "")
 
 	// the response is JSON with the page route
@@ -337,6 +339,7 @@ func (t *testingController) testSubSlide(nSlide int, index int) {
 	data := url.Values{}
 	data.Add("index", strconv.Itoa(index))
 	data.Add("touchNav", "0")
+	data.Add("sync", t.gbls.sync)
 
 	// notify sub-slide change
 	rs := t.post("/control-change", t.gbls.token, data, "")
@@ -538,7 +541,7 @@ func (t *testingController) post(path string, token string, data url.Values, toP
 func (t *testingController) readGlobals(rs *http.Response) {
 
 	// read response data in to memory
-	body, err := ioutil.ReadAll(rs.Body)
+	body, err := io.ReadAll(rs.Body)
 	if err != nil {
 		t.Fatal("Error reading HTTP body. ", err)
 	}
@@ -582,6 +585,9 @@ func (t *testingController) readGlobals(rs *http.Response) {
 		case "Puppet":
 			t.gbls.puppet = v
 
+		case "Sync":
+			t.gbls.sync = v
+
 		case "Tick":
 			t.gbls.tick = v // ## does this match the regexp?
 
@@ -617,7 +623,7 @@ func (t *testingController) readReply(rs *http.Response) *quiz.RepDisplay {
 func (t *testingController) readToken(rs *http.Response) string {
 
 	// read response data in to memory
-	body, err := ioutil.ReadAll(rs.Body)
+	body, err := io.ReadAll(rs.Body)
 	if err != nil {
 		t.Fatal("Error reading HTTP body. ", err)
 	}

@@ -76,6 +76,7 @@ type dataDisplay struct {
 	Update     int    // data update timestamp
 	Monitor    int    // client monitor index
 	Interval   int    // refresh interval (mS)
+	Sync       int    // controller synchronisation
 	Tick       string // timer tick, to stop browsers sleeping
 	CSRFToken  string // CSRF token
 	BreakSlide string // optional final slide

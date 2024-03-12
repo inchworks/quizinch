@@ -8,9 +8,18 @@ function controlChange(newIndex) {
 
 	gblIndex = newIndex;
 
-	// report current position (ignoring response), and if touchscreen navigation is needed
+	// report current position, and if touchscreen navigation is needed
 	if (gblPuppet == "C")
-		$.post('/control-change', { index: newIndex, touchNav: gblTouchNav, csrf_token: gblToken });
+		$.post(
+			'/control-change',
+			{ index: newIndex, touchNav: gblTouchNav, sync: gblSync, csrf_token: gblToken },
+			function (response) {
+
+				// check if controller has lost synchronisation
+				if (response.newHRef != '')
+					window.location.href = response.newHRef;
+			},
+			'json');
 }
 
 // Get new position
@@ -51,7 +60,7 @@ function controlStep(next) {
 
 	$.post(
 		'/control-step',
-		{ next: next, csrf_token: gblToken },
+		{ next: next, sync: gblSync, csrf_token: gblToken },
 		function (response) {
 			window.location.href = response.newHRef;
 		},

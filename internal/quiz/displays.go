@@ -174,6 +174,7 @@ func (d *DisplayState) displayRound(puppet string, nRound int, forQuestions bool
 		Slides: slides,
 		dataDisplay: dataDisplay{
 			Index:      d.slideIndex(puppet),
+			Sync: 		d.app.quizState.syncUpdate,
 			BreakSlide: "P", // aways pause after questions or answers
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
@@ -254,6 +255,7 @@ func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dat
 
 			Index:      d.slideIndex(puppet),
 			Update:     d.app.quizState.publishedUpdate,
+			Sync: 		d.app.quizState.syncUpdate,
 			Tick:       d.contest.Tick,
 			BreakSlide: decodeFormat(round.Format, 0).additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,
@@ -274,6 +276,7 @@ func (d *DisplayState) displayStatic(puppet string) *dataStatic {
 		dataDisplay: dataDisplay{
 			BreakSlide: "P",
 			Organiser:  d.app.quizState.quizCached.Organiser,
+			Sync: 		d.app.quizState.syncUpdate,
 			Tick:       d.contest.Tick,
 			TouchNav:   d.navigation(puppet),
 		},
@@ -294,6 +297,7 @@ func (d *DisplayState) displayTeams(puppet string) *dataTeams {
 		ReadyTo: d.readyTo(),
 		dataDisplay: dataDisplay{
 			Update:    d.app.quizState.publishedUpdate,
+			Sync: 		d.app.quizState.syncUpdate,
 			Tick:      d.contest.Tick,
 			Organiser: d.app.quizState.quizCached.Organiser,
 			TouchNav:  d.navigation(puppet),
@@ -319,6 +323,7 @@ func (d *DisplayState) displayWait(nRound int, puppet string) *dataWait {
 		Title: round.Title,
 		dataDisplay: dataDisplay{
 			Update:     d.app.quizState.publishedUpdate,
+			Sync: 		d.app.quizState.syncUpdate,
 			Tick:       d.contest.Tick,
 			BreakSlide: decodeFormat(round.Format, 0).additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,

@@ -77,7 +77,7 @@ func (s *QuizState) worker(
 		case req := <-chRound:
 
 			// a round has been updated or removed
-			s.onUpdateRound(req.RoundId, req.tx, req.Revised)
+			s.onUpdateRound(req.RoundId, req.tx)
 
 		case <-done:
 			// ## do something to finish other pending requests
@@ -87,13 +87,13 @@ func (s *QuizState) worker(
 }
 
 // onUpdateRound processes an updated or deleted round.
-func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId, revised bool) int {
+func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
 
 	// setup
 	bind := s.app.uploader.StartBind(roundId, tx)
 
 	// set versioned media, and update round
-	if st := s.updateMedia(roundId, revised, bind); st != 0 {
+	if st := s.updateMedia(roundId, bind); st != 0 {
 		return st
 	}
 
@@ -112,8 +112,8 @@ func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId, revised bool) int 
 	}
 }
 
-// updateMedia changes media versions for a round. It also sets the slideshow revision time.
-func (s *QuizState) updateMedia(roundId int64, revised bool, bind *uploader.Bind) int {
+// updateMedia changes media versions for a round.
+func (s *QuizState) updateMedia(roundId int64, bind *uploader.Bind) int {
 
 	// serialise display state while slides are changing
 	defer s.updatesQuiz()()

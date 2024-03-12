@@ -23,15 +23,14 @@ import (
 	"net/http"
 )
 
-// Slide changed by controller
-
+// controlChange sets the current slide position, changed by the controller
 func (app *Application) controlChange(w http.ResponseWriter, r *http.Request) {
 
 	// AJAX data request
-	req := ReqControllerIndex{
+	req := ReqControlIndex{
 		Index:    app.intParam(r, "index"),
+		Sync:     app.intParam(r, "sync"),
 		TouchNav: app.intParam(r, "touchNav"),
-		Token:    r.FormValue("token"),
 	}
 
 	// save current position, for use by puppet display ..
@@ -78,7 +77,6 @@ func (app *Application) controlUpdate(w http.ResponseWriter, r *http.Request) {
 		Index:  app.intParam(r, "index"),
 		Update: app.intParam(r, "update"),
 		Second: app.intParam(r, "second"),
-		Token:  r.FormValue("token"),
 	}
 
 	// monitor
@@ -103,11 +101,16 @@ func (app *Application) controlStep(w http.ResponseWriter, r *http.Request) {
 	// we must return some JSON containing the new path, and have the AJAX hander go the the next page.
 	// rantMode=off
 
+	req := ReqControlStep{
+		Next: app.intParam(r, "next"),
+		Sync: app.intParam(r, "sync"),
+	}
+
 	var rep RepDisplay
-	if app.intParam(r, "next") > 0 {
-		rep = app.displayState.pageNext()
+	if req.Next > 0 {
+		rep = app.displayState.pageNext(req.Sync)
 	} else {
-		rep = app.displayState.pageBack()
+		rep = app.displayState.pageBack(req.Sync)
 	}
 
 	// JSON response

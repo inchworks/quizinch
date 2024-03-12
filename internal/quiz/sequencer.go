@@ -24,16 +24,16 @@ import (
 )
 
 // request from controller display to update puppets
-type ReqControllerIndex struct {
+type ReqControlIndex struct {
 	Index    int
+	Sync     int
 	TouchNav int
-	Token    string
 }
 
 // request from controller display to step forward/back
 type ReqControlStep struct {
 	Next  int
-	Token string
+	Sync  int
 }
 
 // request from controller display for update
@@ -43,7 +43,6 @@ type ReqControlUpdate struct {
 	Index  int
 	Update int
 	Second int
-	Token  string
 }
 
 // request from puppet display for update
@@ -63,10 +62,22 @@ type RepDisplay struct {
 	Tick  string `json:"newTick"`
 }
 
-// reply with success
-// ## somewhat pointless, must have been an early attempt!
-type RepStatus struct {
-	Success bool `json:"success"`
+// checkSync verifies that the controller is synchronised with the server.
+// If not, it returns a resynchronisation response for the controller.
+func (d *DisplayState) checkSync(sync int) *RepDisplay {
+	if sync == d.app.quizState.syncUpdate {
+		return nil // ok
+	}
+
+	// treat the controller like a puppet
+	s := d.contest
+	var rd RepDisplay
+	if s.CurrentPage == models.PageStatic {
+		rd = d.getPuppetMainStatic(-1, -1, DisplayController)
+	} else {
+		rd = d.getPuppetMainRound(-1, -1, -1, DisplayController)
+	}
+	return &rd
 }
 
 // getPuppetResponse returns the updated state for puppet display.
@@ -95,9 +106,9 @@ func (d *DisplayState) getPuppetResponse(r *ReqPuppet) RepDisplay {
 		if !s.Live {
 			return d.getPuppetPractice()
 		} else if s.CurrentPage == models.PageStatic {
-			return d.getPuppetMainStatic(r.Page, r.Param, r.Index, r.Puppet)
+			return d.getPuppetMainStatic(r.Page, r.Param, r.Puppet)
 		} else {
-			return d.getPuppetMainRound(r.Page, r.Param, r.Index, r.Update, r.Puppet)
+			return d.getPuppetMainRound(r.Page, r.Param, r.Update, r.Puppet)
 		}
 
 	case DisplayQuizmaster:
@@ -105,7 +116,7 @@ func (d *DisplayState) getPuppetResponse(r *ReqPuppet) RepDisplay {
 
 	case DisplayScoreboard:
 		if s.Live {
-			return d.getPuppetScoreboard(r.Page, r.Param, r.Index, r.Update)
+			return d.getPuppetScoreboard(r.Page, r.Param, r.Update)
 		} else {
 			return d.getPuppetPractice()
 		}
@@ -178,11 +189,16 @@ func (d *DisplayState) getUpdateResponse(r *ReqControlUpdate) RepDisplay {
 }
 
 // pageBack selects the previous quiz page. It returns a reply containing the route.
-func (d *DisplayState) pageBack() RepDisplay {
+func (d *DisplayState) pageBack(sync int) RepDisplay {
 
 	// serialisation
 	defer d.updatesAll()() // only for prepareForScores :-(
 
+	// controller must be synchronised with server
+	if r := d.checkSync(sync); r != nil {
+		return *r
+	}
+	
 	qs := &d.app.quizState
 	s := d.contest
 
@@ -287,15 +303,23 @@ func (d *DisplayState) pageBack() RepDisplay {
 	// start of page (we always skip back to the start of the previous page)
 	s.CurrentIndex = 0
 
+	// controller must resynchronise
+	d.app.quizState.changedSync()
+
 	// route for controller redirection
 	return RepDisplay{HRef: pathToPage(route, DisplayController, param, 0)}
 }
 
 // pageNext selects the next quiz page. It returns a reply containing the route.
-func (d *DisplayState) pageNext() RepDisplay {
+func (d *DisplayState) pageNext(sync int) RepDisplay {
 
 	// serialisation
 	defer d.updatesAll()() // needed for allowResponses, prepareForScores :-(
+
+	// controller must be synchronised with server
+	if r := d.checkSync(sync); r != nil {
+		return *r
+	}
 
 	qs := &d.app.quizState
 	s := d.contest
@@ -421,6 +445,9 @@ func (d *DisplayState) pageNext() RepDisplay {
 	// start of page
 	s.CurrentIndex = 0
 
+	// controller must resynchronise
+	d.app.quizState.changedSync()
+
 	// route for redirection
 	return RepDisplay{HRef: pathToPage(route, DisplayController, param, 0)}
 }
@@ -498,11 +525,16 @@ func (d *DisplayState) resumeQuiz() string {
 
 // Set current position for puppet displays
 
-func (d *DisplayState) setPuppet(r *ReqControllerIndex) RepStatus {
+func (d *DisplayState) setPuppet(r *ReqControlIndex) RepDisplay {
 
 	// serialisation
 	defer d.updatesDisplays()()
 
+	// controller must be synchronised with server
+	if r := d.checkSync(r.Sync); r != nil {
+		return *r
+	}
+	
 	s := d.contest
 
 	// note new position
@@ -514,7 +546,7 @@ func (d *DisplayState) setPuppet(r *ReqControllerIndex) RepStatus {
 		s.TouchController = false
 	}
 
-	return RepStatus{Success: true}
+	return RepDisplay{} // no controller action needed
 }
 
 // Return the number of rounds for which answers are deferred
@@ -532,7 +564,7 @@ func (d *DisplayState) deferAnswers(nRound int, nRounds int) int {
 // ## Could take unmarshalled JSON as a single struct param?
 //  ## -> sessionManager??
 
-func (d *DisplayState) getPuppetMainRound(page int, param int, index int, update int, puppet string) RepDisplay {
+func (d *DisplayState) getPuppetMainRound(page int, param int, update int, puppet string) RepDisplay {
 
 	s := d.contest
 	currentPage := s.CurrentPage
@@ -595,7 +627,7 @@ func (d *DisplayState) getPuppetMainRound(page int, param int, index int, update
 
 // Get response for puppet main display : static page
 
-func (d *DisplayState) getPuppetMainStatic(page int, param int, index int, puppet string) RepDisplay {
+func (d *DisplayState) getPuppetMainStatic(page int, param int, puppet string) RepDisplay {
 
 	s := d.contest
 	currentStatic := s.CurrentStatic
@@ -747,7 +779,7 @@ func (ds *DisplayState) getPuppetRespond(access string, nTeam int, index int) Re
 
 // Get response for puppet scoreboard
 
-func (d *DisplayState) getPuppetScoreboard(page int, round int, index int, update int) RepDisplay {
+func (d *DisplayState) getPuppetScoreboard(page int, round int, update int) RepDisplay {
 
 	qs := &d.app.quizState
 	s := d.contest

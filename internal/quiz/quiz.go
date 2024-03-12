@@ -105,7 +105,6 @@ type Configuration struct {
 // Operation to update media for round.
 type OpUpdateRound struct {
 	RoundId int64
-	Revised bool
 	tx      etx.TxId
 }
 
