@@ -210,6 +210,7 @@ func (q *QuizState) forEditQuiz(token string) *quizFormData {
 	f.Set("organiser", qc.Organiser)
 	f.Set("nTieBreakers", strconv.Itoa(qc.NTieBreakers))
 	f.Set("nFinalScores", strconv.Itoa(qc.NFinalScores))
+	f.Set("nWinners", strconv.Itoa(qc.NWinners))
 	f.Set("nDeferred", strconv.Itoa(qc.NDeferred))
 	f.Set("access", qc.Access)
 	f.Set("refresh", strconv.Itoa(qc.Refresh))
@@ -236,7 +237,7 @@ func (q *QuizState) forEditQuiz(token string) *quizFormData {
 //
 // Returns true if no client errors.
 
-func (q *QuizState) onEditQuiz(title string, organiser string, nTieBreakers int, nFinalScores int, nDeferred int, access string, refresh int) bool {
+func (q *QuizState) onEditQuiz(title string, organiser string, nTieBreakers int, nFinalScores int, nWinners int, nDeferred int, access string, refresh int) bool {
 
 	// serialisation
 	defer q.updatesQuiz()()
@@ -247,6 +248,7 @@ func (q *QuizState) onEditQuiz(title string, organiser string, nTieBreakers int,
 	qc.Organiser = organiser
 	qc.NTieBreakers = nTieBreakers
 	qc.NFinalScores = nFinalScores
+	qc.NWinners = nWinners
 	qc.NDeferred = nDeferred
 	qc.Access = access
 	qc.Refresh = refresh

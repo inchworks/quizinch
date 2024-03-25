@@ -60,6 +60,7 @@ var cmds = [...]string{
 		refresh int(11) NOT NULL,
 		access varchar(60) COLLATE utf8_unicode_ci NOT NULL,
 		n_final_scores int(11) NOT NULL,
+		n_winners int(11) NOT NULL,
 		response_round int(11) NOT NULL,
 		scoring_round int(11) NOT NULL,
 		PRIMARY KEY (id)
@@ -204,6 +205,7 @@ func Setup(stQuiz *QuizStore, stSess *ContestStore, stUser *UserStore, quizId in
 			Refresh:       refresh,
 			Access:        "",
 			NFinalScores:  4,
+			NWinners:      1,
 			ResponseRound: 0,
 			ScoringRound:  0,
 		}
@@ -243,6 +245,26 @@ func Setup(stQuiz *QuizStore, stSess *ContestStore, stUser *UserStore, quizId in
 	}
 	return quiz, sess, nil
 }
+
+// MigrateQuiz1 upgrades the database for version 1.0.4.
+func MigrateQuiz1(st *QuizStore, tx *sqlx.Tx) error {
+
+	var cmdQuiz = `ALTER TABLE quiz ADD COLUMN n_winners int(11) NOT NULL;`
+
+	// has winners column been added yet?
+	if _, err := tx.Exec(cmdQuiz); err != nil {
+		return nil
+	}
+
+	// set default winners
+	q, err := st.Get(1)
+	if err == nil {
+		q.NWinners = 1
+		err = st.Update(q)
+	}
+	return err
+}
+
 
 // create admin user
 

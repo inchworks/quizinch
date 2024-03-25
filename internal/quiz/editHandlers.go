@@ -182,12 +182,13 @@ func (app *Application) postFormQuiz(w http.ResponseWriter, r *http.Request) {
 
 	// process form data
 	f := multiforms.New(r.PostForm, nosurf.Token(r))
-	f.Required("title", "organiser", "nTieBreakers", "nFinalScores", "nDeferred", "refresh")
+	f.Required("title", "organiser", "nTieBreakers", "nFinalScores", "nWinners", "nDeferred", "refresh")
 	f.MaxLength("title", 60)
 	f.MaxLength("organiser", 60)
 	f.MaxLength("access", 60)
 	nTieBreakers := f.Positive("nTieBreakers")
 	nFinalScores := f.Positive("nFinalScores")
+	nWinners := f.Positive("nWinners")
 	nDeferred := f.Positive("nDeferred")
 	refresh := f.Positive("refresh")
 
@@ -202,7 +203,7 @@ func (app *Application) postFormQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save changes
-	if app.quizState.onEditQuiz(f.Get("title"), f.Get("organiser"), nTieBreakers, nFinalScores, nDeferred, f.Get("access"), refresh) {
+	if app.quizState.onEditQuiz(f.Get("title"), f.Get("organiser"), nTieBreakers, nFinalScores, nWinners, nDeferred, f.Get("access"), refresh) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	} else {

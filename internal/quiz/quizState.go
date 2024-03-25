@@ -110,7 +110,7 @@ func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 }
 
 // calcOnFullRound performs ranking for all teams, saving the team totals.
-// It also checks if we have a tie for first place on the final round.
+// It also checks if we have a tie on the final round.
 func (qs *QuizState) calcOnFullRound(nRound int) {
 
 	// modifies display state
@@ -129,7 +129,7 @@ func (qs *QuizState) calcOnFullRound(nRound int) {
 
 		if teamTotal.Value == priorScore {
 			// do we have a tie on the final round?
-			if nRound == qs.nFullRounds && rank == 1 {
+			if nRound == qs.nFullRounds && rank <= qs.quizCached.NWinners {
 				ds.isTied = true
 			}
 		} else {

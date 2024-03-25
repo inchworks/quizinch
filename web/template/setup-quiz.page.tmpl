@@ -44,6 +44,15 @@
 					{{end}}
 				</div>
 				<div class="col-md-4">
+					<label class='form-label'>Defer answers</label>
+					<input type='number' name='nDeferred' class='form-control {{.Errors.Valid "nDeferred"}}' value='{{.Get "nDeferred"}}'>
+					{{with .Errors.Get "nDeferred"}}
+						<div class='invalid-feedback'>{{.}}</div>
+					{{end}}
+				</div>
+			</div>
+			<div class="row mb-3">
+				<div class="col-md-4">
 					<label class='form-label'>Final scores: no. of teams shown</label>
 					<input type='number' name='nFinalScores' class='form-control {{.Errors.Valid "nFinalScores"}}' value='{{.Get "nFinalScores"}}'>
 					{{with .Errors.Get "nFinalScores"}}
@@ -51,9 +60,9 @@
 					{{end}}
 				</div>
 				<div class="col-md-4">
-					<label class='form-label'>Defer answers</label>
-					<input type='number' name='nDeferred' class='form-control {{.Errors.Valid "nDeferred"}}' value='{{.Get "nDeferred"}}'>
-					{{with .Errors.Get "nDeferred"}}
+					<label class='form-label'>Number of winning teams</label>
+					<input type='number' name='nWinners' class='form-control {{.Errors.Valid "nWinners"}}' value='{{.Get "nWinners"}}'>
+					{{with .Errors.Get "nWinners"}}
 						<div class='invalid-feedback'>{{.}}</div>
 					{{end}}
 				</div>

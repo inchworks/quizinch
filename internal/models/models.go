@@ -80,11 +80,12 @@ type Quiz struct {
 	Organiser    string
 	NTieBreakers int `db:"n_tie_breakers"`
 	NDeferred    int `db:"n_deferred"`
+	NFinalScores int `db:"n_final_scores"`
+	NWinners     int `db:"n_winners"`
 	Refresh      int
 	Access       string
 
 	// state of scoring
-	NFinalScores  int `db:"n_final_scores"`
 	ResponseRound int `db:"response_round"`
 	ScoringRound  int `db:"scoring_round"`
 }

@@ -430,6 +430,11 @@ func (app *Application) initStores(cfg *Configuration) (*models.Quiz, *models.Co
 	// uses own transaction
 	app.statisticStore = mysql.NewStatisticStore(app.db, app.errorLog)
 
+	// database changes from previous version(s)
+	if err := mysql.MigrateQuiz1(app.QuizStore, app.tx); err != nil {
+		app.errorLog.Fatal(err)
+	}
+	
 	// fast display refresh for local server, slower for online
 	var refresh int
 	if app.isOnline {
