@@ -26,16 +26,30 @@ import (
 )
 
 type DisplayState struct {
-	app          *Application
-	muContest    sync.RWMutex
+	app        *Application
+	muDisplays sync.RWMutex
+
+	// cached durable state
 	contest      *models.Contest
 	dirtyContest bool
+
+	// volatile
+	roundFormat      roundFormat // format of current round
+	quizmasterUpdate int // update to quizmaster
+	syncUpdate       int // update to controller synchronisation
+
+	// prompts for quizmaster
+	doNow  string // current slide
+	doNext string // next slide
+	isTied bool   // tie on final round or tie-break
 }
 
 // Initialisation
 
 func (d *DisplayState) Init(s *models.Contest) {
 	d.contest = s
+	d.setRound(s.CurrentRound)
+	d.setPrompts()
 }
 
 // Cancel unneeded update
@@ -45,18 +59,16 @@ func (d *DisplayState) cancelUpdate() {
 	d.dirtyContest = false
 }
 
-// forRead takes a mutex to read display state.
-// It is used in the uncommon case that the quiz is being updated and needs to read the contest.
-func (d *DisplayState) forRead() func() {
+// changedQuizmaster notes that the quizmaster must re-synchronise.
+func (d *DisplayState) changedQuizmaster() {
 
-	// aquire shared locks
-	d.muContest.RLock()
+	d.quizmasterUpdate = timestamp()
+}
 
-	return func() {
+// changedSync notes that the controller must re-synchronise.
+func (d *DisplayState) changedSync() {
 
-		// release locks
-		d.muContest.RUnlock()
-	}
+	d.syncUpdate = timestamp()
 }
 
 // Get serialised contest, for update by quizState
@@ -69,7 +81,7 @@ func (d *DisplayState) forUpdate() (*models.Contest, func()) {
 	// quiz already serialised, and transaction started
 
 	// lock contest
-	d.muContest.Lock()
+	d.muDisplays.Lock()
 	d.dirtyContest = true
 
 	return d.contest, func() {
@@ -82,7 +94,7 @@ func (d *DisplayState) forUpdate() (*models.Contest, func()) {
 		}
 
 		// release lock (transaction ended by quizState)
-		d.muContest.Unlock()
+		d.muDisplays.Unlock()
 	}
 }
 
@@ -92,7 +104,7 @@ func (d *DisplayState) updatesAll() func() {
 
 	// acquire locks (transaction started by quizState)
 	qUnlock := d.app.quizState.updatesQuiz()
-	d.muContest.Lock()
+	d.muDisplays.Lock()
 
 	d.dirtyContest = true
 
@@ -107,7 +119,7 @@ func (d *DisplayState) updatesAll() func() {
 		}
 
 		// release locks (transaction ended by quiz state)
-		d.muContest.Unlock()
+		d.muDisplays.Unlock()
 		qUnlock()
 	}
 }
@@ -118,7 +130,7 @@ func (d *DisplayState) updatesDisplays() func() {
 
 	// acquire locks
 	qUnlock := d.app.quizState.updatesNone()
-	d.muContest.Lock()
+	d.muDisplays.Lock()
 
 	d.dirtyContest = true
 
@@ -146,7 +158,7 @@ func (d *DisplayState) updatesDisplays() func() {
 		d.app.tx = nil
 
 		// release locks
-		d.muContest.Unlock()
+		d.muDisplays.Unlock()
 		qUnlock()
 	}
 }
@@ -157,12 +169,12 @@ func (d *DisplayState) updatesNone() func() {
 
 	// aquire shared locks
 	qUnlock := d.app.quizState.updatesNone()
-	d.muContest.RLock()
+	d.muDisplays.RLock()
 
 	return func() {
 
 		// release locks
-		d.muContest.RUnlock()
+		d.muDisplays.RUnlock()
 		qUnlock()
 	}
 }

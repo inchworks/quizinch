@@ -1,15 +1,15 @@
 /* headings */
 
 h2.scores {
-	text-align : center;
+	text-align: center;
 	font-size: 4vw;
-  	font-weight: bold;
-  	margin-bottom: .30435em;
-  	text-align: center;
+	font-weight: bold;
+	margin-bottom: .30435em;
+	text-align: center;
 }
 
 h2.start {
-	text-align : center;
+	text-align: center;
 	font-size: 6vw;
 }
 
@@ -18,55 +18,59 @@ h3.start {
 }
 
 h3.wait {
-	text-align : center;
+	text-align: center;
 	font-size: 3vw;
 }
 
 /* tables */
 
 .quizScores {
-	width:600px;
+	width: 600px;
 	margin: 0px auto;
 	border-collapse: collapse;
-    border-bottom: 0.5em solid LightGray;
-  	font-size: 3vw;
+	border-bottom: 0.5em solid LightGray;
+	font-size: 3vw;
 }
 
 .quizScores th {
 	background-color: LightGray;
 }
-	
+
 
 .quizScores td {
-    border-top: 1px solid LightGray;
-    border-bottom: 1em 28px;
+	border-top: 1px solid LightGray;
+	border-bottom: 1em 28px;
 }
 
 /* misc */
 
 .tick {
-	float : right;
-	margin-top : 12px;
+	float: right;
+	margin-top: 12px;
 	font-size: 20px;
 	color: grey;
 }
 
 .logo {
-	margin-top : 20px;
+	margin-top: 20px;
 }
 
 /* always show navigation buttons on controller display, if present  */
 
-.controller .deck-prev-link, .controller .deck-next-link {
-  display: block !important;
- }
+.controller .deck-prev-link,
+.controller .deck-next-link {
+	display: block !important;
+}
 
 /* extra spacing for newlines in questions */
 
 br {
-	display: block;		/* makes it have a width */
-	content: "";		/* clears default height */
-	margin-top: 4px;	/* extra height */
+	display: block;
+	/* makes it have a width */
+	content: "";
+	/* clears default height */
+	margin-top: 4px;
+	/* extra height */
 }
 
 /* audio controls, video */
@@ -74,20 +78,33 @@ br {
 .audio-container {
 	display: flex;
 	justify-content: right;
-	align-items: center 
- }
+	align-items: center
+}
 
 .picture-container {
 	height: 70vh;
 }
 
 .picture-container img {
-    height: 100%;
-    width: auto;
+	height: 100%;
+	width: auto;
 }
 
 .video-container {
 	display: flex;
 	justify-content: center;
-	align-items: center 
- }
+	align-items: center
+}
+
+/* prompts */
+div.prompts {
+	margin-top: 12px;
+	display: flex;
+	justify-content: space-around;
+}
+
+div.prompt {
+	padding: 4px 12px;
+	color: #c00;
+	background-color: lightgray;
+}

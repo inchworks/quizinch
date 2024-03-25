@@ -56,8 +56,9 @@ const (
 
 const (
 	// static page codes
-	StaticStart = 0
-	StaticEnd   = 999
+	StaticStart    = 0
+	StaticInterval = 1
+	StaticEnd      = 999
 )
 
 var ErrNoRecord = errors.New("models: no matching record found")

@@ -48,6 +48,7 @@ type roundFormat struct {
 	slideQuestions int    // max per slide
 	slideAnswers   int    // max per slide
 	combined       bool   // combined Q&A
+	interval       bool   // follow scores by interval
 	additional     string // slide for interval, end of quiz, etc.
 }
 
@@ -68,8 +69,16 @@ func (d *DisplayState) displayLeaderboard(nRound int, puppet string) *dataScores
 
 	// teams sorted by overall rank, up to previous round
 	scoreStore := d.app.ScoreStore
-	scoresRanked := scoreStore.ForRoundByRank(nRound - 1, d.app.NTeams)
+	scoresRanked := scoreStore.ForRoundByRank(nRound-1, d.app.NTeams)
 
+	// update state
+	var update int
+	if puppet == `Q` {
+		update = d.quizmasterUpdate
+	} else {
+		update = d.app.quizState.publishedUpdate
+	}
+	
 	return &dataScores{
 		Title:        round.Title,
 		ScoredTo:     d.scoredTo(puppet),
@@ -78,11 +87,13 @@ func (d *DisplayState) displayLeaderboard(nRound int, puppet string) *dataScores
 		dataDisplay: dataDisplay{
 
 			Index:      d.slideIndex(puppet),
-			Update:     d.app.quizState.publishedUpdate,
+			Update:     update,
 			Tick:       d.contest.Tick,
-			BreakSlide: decodeFormat(round.Format, 0).additional,
+			BreakSlide: d.app.displayState.roundFormat.additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
+			DoNow:      d.doNow,
+			DoNext:     d.doNext,
 		},
 	}
 }
@@ -112,11 +123,13 @@ func (d *DisplayState) displayResponses(nRound int, puppet string) *dataResponde
 		dataDisplay: dataDisplay{
 
 			Index:      d.slideIndex(puppet),
-			Update:     d.app.quizState.responseUpdate,
+			Update:     d.quizmasterUpdate,
 			Tick:       d.contest.Tick,
-			BreakSlide: decodeFormat(r.Format, 0).additional,
+			BreakSlide: d.app.displayState.roundFormat.additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
+			DoNow:      d.doNow,
+			DoNext:     d.doNext,
 		},
 	}
 }
@@ -140,7 +153,7 @@ func (d *DisplayState) displayRound(puppet string, nRound int, forQuestions bool
 	var slides []*Slide
 	var split bool
 	var roundTemplate string
-	rf := decodeFormat(round.Format, d.app.cfg.SlideItems)
+	rf := d.app.displayState.roundFormat
 
 	if forQuestions {
 		// split questions into slides
@@ -174,8 +187,8 @@ func (d *DisplayState) displayRound(puppet string, nRound int, forQuestions bool
 		Slides: slides,
 		dataDisplay: dataDisplay{
 			Index:      d.slideIndex(puppet),
-			Sync: 		d.app.quizState.syncUpdate,
-			BreakSlide: "P", // aways pause after questions or answers
+			Sync:       d.syncUpdate,
+			BreakSlide: "P", // always pause after questions or answers
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
 		},
@@ -243,6 +256,14 @@ func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dat
 		}
 	}
 
+	// update state
+	var update int
+	if puppet == `Q` {
+		update = d.quizmasterUpdate
+	} else {
+		update = d.app.quizState.publishedUpdate
+	}
+
 	return &dataScores{
 		Title:         round.Title,
 		ScoredTo:      d.scoredTo(puppet),
@@ -254,12 +275,14 @@ func (d *DisplayState) displayScores(nRound int, final bool, puppet string) *dat
 		dataDisplay: dataDisplay{
 
 			Index:      d.slideIndex(puppet),
-			Update:     d.app.quizState.publishedUpdate,
-			Sync: 		d.app.quizState.syncUpdate,
+			Update:     update,
+			Sync:       d.syncUpdate,
 			Tick:       d.contest.Tick,
-			BreakSlide: decodeFormat(round.Format, 0).additional,
+			BreakSlide: d.app.displayState.roundFormat.additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
+			DoNow:      d.doNow,
+			DoNext:     d.doNext,
 		},
 	}
 }
@@ -276,7 +299,7 @@ func (d *DisplayState) displayStatic(puppet string) *dataStatic {
 		dataDisplay: dataDisplay{
 			BreakSlide: "P",
 			Organiser:  d.app.quizState.quizCached.Organiser,
-			Sync: 		d.app.quizState.syncUpdate,
+			Sync:       d.syncUpdate,
 			Tick:       d.contest.Tick,
 			TouchNav:   d.navigation(puppet),
 		},
@@ -292,15 +315,25 @@ func (d *DisplayState) displayTeams(puppet string) *dataTeams {
 
 	teams := d.app.TeamStore.ByName()
 
+	// update state
+	var update int
+	if puppet == `Q` {
+		update = d.quizmasterUpdate
+	} else {
+		update = d.app.quizState.publishedUpdate
+	}
+	
 	return &dataTeams{
 		Teams:   teams,
 		ReadyTo: d.readyTo(),
 		dataDisplay: dataDisplay{
-			Update:    d.app.quizState.publishedUpdate,
-			Sync: 		d.app.quizState.syncUpdate,
+			Update:    update,
+			Sync:      d.syncUpdate,
 			Tick:      d.contest.Tick,
 			Organiser: d.app.quizState.quizCached.Organiser,
 			TouchNav:  d.navigation(puppet),
+			DoNow:     d.doNow,
+			DoNext:    d.doNext,
 		},
 	}
 }
@@ -323,9 +356,9 @@ func (d *DisplayState) displayWait(nRound int, puppet string) *dataWait {
 		Title: round.Title,
 		dataDisplay: dataDisplay{
 			Update:     d.app.quizState.publishedUpdate,
-			Sync: 		d.app.quizState.syncUpdate,
+			Sync:       d.syncUpdate,
 			Tick:       d.contest.Tick,
-			BreakSlide: decodeFormat(round.Format, 0).additional,
+			BreakSlide: d.app.displayState.roundFormat.additional,
 			Organiser:  d.app.quizState.quizCached.Organiser,
 			TouchNav:   d.navigation(puppet),
 		},
@@ -363,8 +396,11 @@ func decodeFormat(format string, slideItems int) roundFormat {
 			c := f[0]
 			switch c {
 
-			case 'E', 'I':
+			case 'E':
 				rf.additional = f // additional slide
+
+			case 'I':
+				rf.interval = true
 
 			case 'Q':
 				rf.slideQuestions = decodeMax(f, slideItems)

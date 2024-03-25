@@ -110,7 +110,7 @@ func (app *Application) controlStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, app.quizState.StartQuiz(live), http.StatusSeeOther)
+	http.Redirect(w, r, app.displayState.startQuiz(live), http.StatusSeeOther)
 }
 
 // noAccess shows a page when an access token has been rejected.

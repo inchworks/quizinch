@@ -144,11 +144,11 @@ func (app *Application) Routes() http.Handler {
 
 	// displays
 	router.Handler("GET", "/quiz-answers/:puppet/:nRound", puppetHs.ThenFunc(app.quizAnswers))
-	router.Handler("GET", "/quiz-end/:puppet/:nPage", puppetHs.ThenFunc(app.quizEnd))
 	router.Handler("GET", "/quiz-final/:puppet/:nRound", puppetHs.ThenFunc(app.quizFinal))
 	router.Handler("GET", "/quiz-questions/:puppet/:nRound", puppetHs.ThenFunc(app.quizQuestions))
 	router.Handler("GET", "/quiz-scores/:puppet/:nRound", puppetHs.ThenFunc(app.quizScores))
 	router.Handler("GET", "/quiz-start/:puppet/:nPage", puppetHs.ThenFunc(app.quizStart))
+	router.Handler("GET", "/quiz-static/:puppet/:nPage", puppetHs.ThenFunc(app.quizStatic))
 	router.Handler("GET", "/quiz-wait/:puppet/:nRound", puppetHs.ThenFunc(app.quizWait))
 
 	router.Handler("GET", "/quizmaster-responses/:puppet/:nRound", organiserHs.ThenFunc(app.quizmasterResponses))
@@ -211,10 +211,10 @@ func (app *Application) getTeamURL(access string, teamId int64) string {
 }
 
 // pathToPage returns a display path
-func pathToPage(route string, display string, nRound int, index int) string {
+func pathToPage(route string, display string, nPage int, index int) string {
 
 	// URL
-	path := path.Join("/", route, display, strconv.Itoa(nRound))
+	path := path.Join("/", route, display, strconv.Itoa(nPage))
 
 	// add slide index
 	if index > 0 {

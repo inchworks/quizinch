@@ -82,6 +82,8 @@ type dataDisplay struct {
 	BreakSlide string // optional final slide
 	Organiser  string // needed just for break slide
 	TouchNav   string // touch control class
+	DoNow      string // quizmaster prompt
+	DoNext     string // quizmaster prompt
 	IsLive     bool   // quiz started and not in practice mode
 	dataCommon
 }

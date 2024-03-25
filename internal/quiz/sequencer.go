@@ -20,6 +20,8 @@ package quiz
 // Sequencing of quiz slides.
 
 import (
+	"strconv"
+
 	"inchworks.com/quiz/internal/models"
 )
 
@@ -32,8 +34,8 @@ type ReqControlIndex struct {
 
 // request from controller display to step forward/back
 type ReqControlStep struct {
-	Next  int
-	Sync  int
+	Next int
+	Sync int
 }
 
 // request from controller display for update
@@ -65,7 +67,7 @@ type RepDisplay struct {
 // checkSync verifies that the controller is synchronised with the server.
 // If not, it returns a resynchronisation response for the controller.
 func (d *DisplayState) checkSync(sync int) *RepDisplay {
-	if sync == d.app.quizState.syncUpdate {
+	if sync == d.syncUpdate {
 		return nil // ok
 	}
 
@@ -198,7 +200,7 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 	if r := d.checkSync(sync); r != nil {
 		return *r
 	}
-	
+
 	qs := &d.app.quizState
 	s := d.contest
 
@@ -213,19 +215,28 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 
 	case models.PageStatic:
 
-		if d.isSuddenDeath(nRound) {
-			// back to sudden death round
-			route = `quiz-questions`
-			s.CurrentPage = models.PageQuestions
-			d.allowResponses()
+		if s.CurrentStatic == models.StaticEnd {
 
-		} else if nRound != 1 {
+			if d.roundFormat.combined {
+				// back to sudden death round
+				route = `quiz-questions`
+				s.CurrentPage = models.PageQuestions
+				d.allowResponses()
 
-			// assume end of quiz
-			nRound = nRounds + qs.nTieRounds
+			} else if nRound != 1 {
+
+				// assume end of quiz
+				nRound = nRounds + qs.nTieRounds
+				route = d.scoresOrWait(nRound)
+				d.setRound(nRound)
+			}
+
+		} else if s.CurrentStatic == models.StaticInterval {
+			// scores before interval
 			route = d.scoresOrWait(nRound)
-			s.CurrentRound = nRound
+
 		} else {
+			// still the start
 			route = `quiz-start`
 		}
 
@@ -241,14 +252,23 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 			s.CurrentStatic = models.StaticStart
 
 		} else if nRound <= nDefer+1 {
+			 // answers were deferred for previous round
 			route = `quiz-questions`
-			s.CurrentRound = nRound - 1 // answers were deferred
+			d.setRound(nRound - 1) // answers were deferred
 			d.allowResponses()
 
 		} else {
+			// usually scores ..
 			nRound = nRound - nDefer - 1
 			route = d.scoresOrWait(nRound)
-			s.CurrentRound = nRound
+			d.setRound(nRound)
+
+			if d.roundFormat.interval {
+				// .. but scores were followed by an interval
+				route = `quiz-static`
+				s.CurrentPage = models.PageStatic
+				s.CurrentStatic = models.StaticInterval
+			}
 		}
 
 		// scorers to see that questions are closed
@@ -267,7 +287,7 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 			// previous question round
 			route = `quiz-questions`
 			s.CurrentPage = models.PageQuestions
-			s.CurrentRound = nRound + nDefer
+			d.setRound(nRound + nDefer)
 			d.allowResponses()
 
 		} else {
@@ -275,7 +295,7 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 			// answers preceeding deferred answers
 			nRound = nRound - 1
 			route = d.scoresOrWait(nRound)
-			s.CurrentRound = nRound
+			d.setRound(nRound)
 		}
 
 	case models.PageFinal, models.PageScores, models.PageScoresWait:
@@ -303,8 +323,10 @@ func (d *DisplayState) pageBack(sync int) RepDisplay {
 	// start of page (we always skip back to the start of the previous page)
 	s.CurrentIndex = 0
 
+	d.setPrompts()
+
 	// controller must resynchronise
-	d.app.quizState.changedSync()
+	d.changedSync()
 
 	// route for controller redirection
 	return RepDisplay{HRef: pathToPage(route, DisplayController, param, 0)}
@@ -333,13 +355,20 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 
 	case models.PageStatic:
 
-		// start quiz
-		if nRound == 1 {
+		if s.CurrentStatic == models.StaticStart {
+			// start quiz
 			route = `quiz-questions`
 			s.CurrentPage = models.PageQuestions
+			d.setRound(1)
 			d.allowResponses()
+
+		} else if s.CurrentStatic == models.StaticInterval {
+			// interval followed scores
+			route = d.afterScores(nRound)
+
 		} else {
-			route = `quiz-end`
+			// still the end
+			route = `quiz-static`
 		}
 
 	case models.PageQuestions:
@@ -348,10 +377,10 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 
 		if nRound <= nDefer {
 			route = `quiz-questions`
-			s.CurrentRound = nRound + 1 // deferring answers
+			d.setRound(nRound + 1) // deferring answers
 			d.allowResponses()
 
-		} else if d.isSuddenDeath(nRound) {
+		} else if d.roundFormat.combined {
 
 			// ## this is getting too complicated for an unikely case :-(
 			// ## only one sudden death, and could just count number of tie breakers?
@@ -360,13 +389,13 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 				// start next tie breaker
 				route = `quiz-questions`
 				s.CurrentPage = models.PageQuestions
-				s.CurrentRound = nRound + 1
+				d.setRound(nRound + 1)
 				d.allowResponses()
 
 			} else {
 
 				// quiz is over - there is nothing left
-				route = `quiz-end`
+				route = `quiz-static`
 				s.CurrentPage = models.PageStatic
 				s.CurrentStatic = models.StaticEnd
 			}
@@ -375,7 +404,7 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 			route = `quiz-answers`
 			s.CurrentPage = models.PageAnswers
 			nRound -= nDefer
-			s.CurrentRound = nRound
+			d.setRound(nRound)
 
 			// ready to show the scores, if available
 			d.prepareForScores(nRound)
@@ -391,46 +420,19 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 
 	case models.PageFinal, models.PageScores, models.PageScoresWait:
 
-		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
-
-		if nRound < qs.nFullRounds-nDefer {
-
-			// start next round
-			route = `quiz-questions`
-			s.CurrentPage = models.PageQuestions
-			s.CurrentRound = nRound + nDefer + 1
-			d.allowResponses()
-
-		} else if nRound < qs.nFullRounds {
-
-			// deferred round answers
-			route = `quiz-answers`
-			s.CurrentPage = models.PageAnswers
-			nRound++
-			s.CurrentRound = nRound
-
-			// ready to show the scores, if available
-			d.prepareForScores(nRound)
-
-		} else if nRound < qs.nFullRounds+qs.nTieRounds {
-
-			// start next tie breaker
-			route = `quiz-questions`
-			s.CurrentPage = models.PageQuestions
-			s.CurrentRound = nRound + 1
-			d.allowResponses()
-
-		} else {
-
-			// quiz is over - there is nothing left
-			route = `quiz-end`
+		if d.roundFormat.interval {
+			// interval following scores
+			route = `quiz-static`
 			s.CurrentPage = models.PageStatic
-			s.CurrentStatic = models.StaticEnd
+			s.CurrentStatic = models.StaticInterval
+		} else {
+			// whatever's next
+			route = d.afterScores(nRound)
 		}
 
 	default:
 
-		route = `quiz-end`
+		route = `quiz-static`
 		s.CurrentPage = models.PageStatic
 		s.CurrentStatic = models.StaticEnd
 	}
@@ -445,8 +447,10 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 	// start of page
 	s.CurrentIndex = 0
 
+	d.setPrompts()
+
 	// controller must resynchronise
-	d.app.quizState.changedSync()
+	d.changedSync()
 
 	// route for redirection
 	return RepDisplay{HRef: pathToPage(route, DisplayController, param, 0)}
@@ -461,6 +465,7 @@ func (d *DisplayState) allowResponses() {
 	qs.dirtyQuiz = true
 }
 
+
 // Resume quiz at current page
 //
 // Returns route for redirection.
@@ -472,6 +477,9 @@ func (d *DisplayState) resumeQuiz() string {
 
 	s := d.contest
 	page := s.CurrentPage
+
+	// set round format
+	d.setRound(s.CurrentRound)
 
 	// re-enable touchscreen, because we may be resuming on a different device
 	s.TouchController = true
@@ -487,8 +495,8 @@ func (d *DisplayState) resumeQuiz() string {
 		case models.StaticStart:
 			route = `quiz-start`
 
-		case models.StaticEnd:
-			route = `quiz-end`
+		case models.StaticInterval, models.StaticEnd:
+			route = `quiz-static`
 
 		default:
 			route = `puppet-error`
@@ -513,6 +521,8 @@ func (d *DisplayState) resumeQuiz() string {
 		route = `puppet-error`
 	}
 
+	d.setPrompts()
+
 	// parameter for page
 	if s.CurrentPage == models.PageStatic {
 		param = s.CurrentStatic
@@ -534,7 +544,7 @@ func (d *DisplayState) setPuppet(r *ReqControlIndex) RepDisplay {
 	if r := d.checkSync(r.Sync); r != nil {
 		return *r
 	}
-	
+
 	s := d.contest
 
 	// note new position
@@ -547,6 +557,76 @@ func (d *DisplayState) setPuppet(r *ReqControlIndex) RepDisplay {
 	}
 
 	return RepDisplay{} // no controller action needed
+}
+
+// StartQuiz starts a quiz contest. It returns the initial route for the contoller.
+func (d *DisplayState) startQuiz(live bool) string {
+
+	// serialisation
+	qs := &d.app.quizState
+	defer qs.updatesQuiz()()
+
+	// reset scores and restart displays
+	qs.restartQuiz()
+	d.setPrompts()
+
+	// no tick available until controller starts to send it
+	d.contest.Tick = "*"
+
+	// select live or practice mode
+	d.contest.Live = live
+
+	// reload the current team access tokens, in case they have been updated
+	// Team access is not allowed until the quiz has started, so it doesn't matter if they were out of date earlier.
+	d.app.cacheTeams()
+
+	// first page for controller
+	return pathToPage(`quiz-start`, DisplayController, 0, 0)
+}
+
+// afterScores steps to the next page following scores or the interval. It returns the route.
+func (d *DisplayState) afterScores(nRound int) (route string) {
+
+	qs := &d.app.quizState
+	s := d.contest
+
+	nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+	if nRound < qs.nFullRounds-nDefer {
+
+		// start next round
+		route = `quiz-questions`
+		s.CurrentPage = models.PageQuestions
+		d.setRound(nRound + nDefer + 1)
+		d.allowResponses()
+
+	} else if nRound < qs.nFullRounds {
+
+		// deferred round answers
+		route = `quiz-answers`
+		s.CurrentPage = models.PageAnswers
+		nRound++
+		d.setRound(nRound)
+
+		// ready to show the scores, if available
+		d.prepareForScores(nRound)
+
+	} else if nRound < qs.nFullRounds+qs.nTieRounds {
+
+		// start next tie breaker
+		route = `quiz-questions`
+		s.CurrentPage = models.PageQuestions
+		d.setRound(nRound + 1)
+		d.allowResponses()
+
+	} else {
+
+		// quiz is over - there is nothing left
+		route = `quiz-static`
+		s.CurrentPage = models.PageStatic
+		s.CurrentStatic = models.StaticEnd
+	}
+	return
 }
 
 // Return the number of rounds for which answers are deferred
@@ -642,8 +722,8 @@ func (d *DisplayState) getPuppetMainStatic(page int, param int, puppet string) R
 		case models.StaticStart:
 			route = `quiz-start`
 
-		case models.StaticEnd:
-			route = `quiz-end`
+		case models.StaticInterval, models.StaticEnd:
+			route = `quiz-static`
 
 		default:
 			// ## need an error page
@@ -698,7 +778,7 @@ func (d *DisplayState) getPuppetQuizmaster(page int, round int, index int, updat
 	var newPage int
 	var newIndex int
 	var newURL string
-	newUpdate := d.app.quizState.publishedUpdate
+	newUpdate := d.quizmasterUpdate
 
 	if d.app.isOnline && s.CurrentPage == models.PageQuestions {
 
@@ -887,19 +967,18 @@ func (d *DisplayState) isScoresPage(page int) bool {
 	return page == models.PageScores || page == models.PageFinal
 }
 
-// Is this a sudden death round?
+// setRound changes the current round. The round format is decoded and cached.
+func (d *DisplayState) setRound(nRound int) {
 
-func (d *DisplayState) isSuddenDeath(nRound int) bool {
+	d.contest.CurrentRound = nRound
 
 	// get round
 	round, err := d.app.RoundStore.GetByN(nRound)
 	if err != nil {
 		d.app.errorLog.Print(err)
-		return false
+		return
 	}
-
-	rf := decodeFormat(round.Format, 0)
-	return rf.combined
+	d.roundFormat = decodeFormat(round.Format, d.app.cfg.SlideItems)
 }
 
 // Prepare to show scores, when answers are shown
@@ -924,7 +1003,7 @@ func (d *DisplayState) prepareForScores(nRound int) {
 
 func (d *DisplayState) restartQuiz(s *models.Contest) {
 
-	s.CurrentRound = 1
+	d.isTied = false
 	s.CurrentPage = models.PageStatic
 	s.CurrentStatic = models.StaticStart
 	s.QuizmasterRound = 0
@@ -932,6 +1011,169 @@ func (d *DisplayState) restartQuiz(s *models.Contest) {
 
 	// assume touchscreen required
 	s.TouchController = true
+}
+
+// prompt returns the prompter text for a round
+func prompt(page rune, round int) string {
+	switch page {
+	case 'A':
+		return "R" + strconv.Itoa(round) + " Answers"
+	case 'D':
+		return "Tie " + strconv.Itoa(round) + " Sudden Death"
+	case 'Q':
+		return "R" + strconv.Itoa(round) + " Questions"
+	case 'S':
+		return "R" + strconv.Itoa(round) + " Scores"
+	case 'T':
+		return "Tie " + strconv.Itoa(round) + " Questions"
+	case 'U':
+		return "Tie " + strconv.Itoa(round) + " Answers"
+	case 'V':
+		return "Tie " + strconv.Itoa(round) + " Scores"
+	default:
+		return "??"
+	}
+}
+
+// setPrompts makes prompter text for the quizmaster.
+func (d *DisplayState) setPrompts() {
+
+	qs := &d.app.quizState
+	s := d.contest
+	nRound := s.CurrentRound
+	nStatic := s.CurrentStatic
+
+	switch s.CurrentPage {
+
+	case models.PageStatic:
+
+		// start quiz
+		if nStatic == models.StaticStart {
+			d.doNow = "Welcome"
+			d.doNext = prompt('Q', nRound)
+		} else if nStatic == models.StaticInterval {
+			nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+			d.doNow = "Interval"
+			d.doNext = prompt('Q', nRound + nDefer + 1)
+		} else {
+			d.doNow = "End"
+			d.doNext = ""
+		}
+
+	case models.PageQuestions:
+
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if nRound <= nDefer {
+			// answers deferred
+			d.doNow = prompt('Q', nRound)
+			d.doNext = prompt('Q', nRound+1)
+
+		} else if d.roundFormat.combined {
+			// sudden death tie break
+			// ## assumes sudden-death only used for tie breaks
+			d.doNow = prompt('D', nRound-qs.nFullRounds)
+
+			if nRound < qs.nFullRounds+qs.nTieRounds {
+				// followed by another one
+				d.doNext  = prompt('D', nRound-qs.nFullRounds+1)
+			} else {
+				// quiz is over - there is nothing left
+				d.doNext = "Goodbye"
+			}
+
+		} else if nRound <= qs.nFullRounds {
+			// questions followed by answers for earlier round
+			d.doNow = prompt('Q', nRound)
+			d.doNext  = prompt('A', nRound-nDefer)
+
+		} else {
+			// tie-break questions followed by answers
+			d.doNow = prompt('T', nRound-qs.nFullRounds)
+			d.doNext  = prompt('U', nRound-qs.nFullRounds)
+		}
+
+	case models.PageAnswers:
+
+		// scores always follow answers
+		if nRound <= qs.nFullRounds {
+			// normal round
+			d.doNow = "Answers"
+			d.doNext  = "Scores"
+
+		} else {
+			// tie-break
+			d.doNow = prompt('U', nRound-qs.nFullRounds)
+			d.doNext  = prompt('V', nRound-qs.nFullRounds)
+		}
+	case models.PageScoresWait:
+
+		// scores followed by ..
+		d.doNow = "Waiting"
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if d.roundFormat.interval {
+			// .. interval
+			d.doNext = "Interval"
+
+		} else if nRound < qs.nFullRounds-nDefer {
+			// .. next round questions
+			d.doNext  = prompt('Q', nRound+nDefer+1)
+
+		} else if nRound < qs.nFullRounds {
+			// .. catchup round answers
+			d.doNext  = prompt('A', nRound+1)
+		} else {
+			d.doNext = "Goodbye"
+		}
+
+	case models.PageScores:
+
+		// scores followed by ..
+		d.doNow = "Scores"
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if d.roundFormat.interval {
+			// .. interval
+			d.doNext = "Interval"
+
+		} else if nRound < qs.nFullRounds-nDefer {
+			// .. next round questions
+			d.doNext  = prompt('Q', nRound+nDefer+1)
+
+		} else {
+			// .. catchup round answers
+			d.doNext  = prompt('A', nRound+1)
+		}
+
+	case models.PageFinal:
+
+		if nRound == qs.nFullRounds {
+			// final scores followed by tie-break or end
+			d.doNow = "Scores"
+			if d.isTied && qs.nTieRounds > 0 {
+				d.doNext = prompt('T', 1) // need a tie-break, if we have one
+			} else {
+				d.doNext = "Goodbye"
+			}
+
+		} else if nRound < qs.nFullRounds+qs.nTieRounds {
+			// tie-break scores followed by another tie break, or end
+			nTie := nRound-qs.nFullRounds
+			d.doNow = prompt('V', nTie)
+			if d.isTied && nTie < qs.nTieRounds {
+				d.doNext = prompt('T', nTie+1) // need another tie-break, if we have one
+			} else {
+				d.doNext  = "Goodbye"
+			}
+		}
+
+	default:
+		d.doNow = "End"
+		d.doNext = ""
+	}
+
+	d.changedQuizmaster() // update quizmaster's display
 }
 
 // Choose scores or waiting page.

@@ -54,20 +54,22 @@ type QuizState struct {
 	app             *Application
 	muQuiz          sync.RWMutex
 	rollbackTx      bool
+
 	publishedUpdate int // update to published scores
 	responseUpdate  int // update to team responses
 	scorerUpdate    int // update to unpublished scores
-	syncUpdate      int // update to controller synchronisation
 
-	// scoring: round no -> question ID -> scoreStatus
+	// cached durable state
+	quizCached    *models.Quiz
+	dirtyQuiz     bool
+
+	// cached scoring: round no -> question ID -> scoreStatus
 	scored map[int]map[int64]scoreStatus
 
-	// cached state
-	quizCached    *models.Quiz
+	// cached settings
 	nDeferAnswers int // rounds of deferred answers and scored
 	nFullRounds   int // rounds excluding tie-breakers
 	nTieRounds    int // usable tie-breaker rounds
-	dirtyQuiz     bool
 }
 
 // Init initialises the quiz state
@@ -102,12 +104,21 @@ func (qs *QuizState) calculateTotalsAndRank(nRound int, s *models.Contest) {
 		s.QuizmasterRound = nRound
 	}
 
-	// set revision number for score
+	// set revision numbers for score and quizmaster
 	qs.changedPublished()
+	qs.app.displayState.changedQuizmaster()
 }
 
 // calcOnFullRound performs ranking for all teams, saving the team totals.
+// It also checks if we have a tie for first place on the final round.
 func (qs *QuizState) calcOnFullRound(nRound int) {
+
+	// modifies display state
+	ds := &qs.app.displayState
+
+	// rechecks for a tie
+	ds.isTied = false
+
 	// rank teams by scores
 	rank := 0
 	priorScore := -1.0
@@ -116,7 +127,12 @@ func (qs *QuizState) calcOnFullRound(nRound int) {
 	teamTotals := qs.app.TeamStore.AllWithTotals(nRound)
 	for nTeam, teamTotal := range teamTotals {
 
-		if teamTotal.Value != priorScore {
+		if teamTotal.Value == priorScore {
+			// do we have a tie on the final round?
+			if nRound == qs.nFullRounds && rank == 1 {
+				ds.isTied = true
+			}
+		} else {
 
 			// advance rank
 			rank = nTeam + 1
@@ -137,6 +153,12 @@ func (qs *QuizState) calcOnFullRound(nRound int) {
 // calcOnTieBreak performs ranking for scored teams.
 func (qs *QuizState) calcOnTieBreak(nRound int) {
 
+	// modifies display state
+	ds := &qs.app.displayState
+
+	// rechecks for a tie
+	ds.isTied = false
+
 	// Note that taking part in a tie-break leaves the rank unchanged for the topmost team(s),
 	// and increases the rank for lower teams. For example, four teams tied in 2nd place might
 	// become ranked 2, 3, 3, 5.
@@ -147,7 +169,12 @@ func (qs *QuizState) calcOnTieBreak(nRound int) {
 	teamScores := qs.app.TeamStore.AllScoredWithScores(nRound)
 	for i, teamScore := range teamScores {
 
-		if teamScore.Value != priorScore {
+		if teamScore.Value == priorScore {
+			// do we have a tie for top round score?
+			if delta == 0 {
+				ds.isTied = true
+			}
+		} else {
 			// advance rank
 			delta = i
 			priorScore = teamScore.Value
@@ -247,9 +274,7 @@ func (qs *QuizState) onEditResponses(nRound int, nTeam int, rsSrc []*forms.Respo
 	// ## should report details of client errors
 
 	// serialisation
-	ds := &qs.app.displayState
 	defer qs.updatesQuiz()()
-	defer ds.forRead()()
 
 	// validate round number
 	currentRound := qs.quizCached.ResponseRound
@@ -516,7 +541,7 @@ func (qs *QuizState) changedAll() {
 	qs.publishedUpdate = t
 	qs.responseUpdate = t
 	qs.scorerUpdate = t
-	qs.syncUpdate = t
+	qs.app.displayState.syncUpdate = t
 }
 
 // onConfirmQuestion processes the confirmation of scores for a question.
@@ -566,12 +591,6 @@ func (qs *QuizState) changedResponse() {
 func (qs *QuizState) changedScorer() {
 
 	qs.scorerUpdate = timestamp()
-}
-
-// changedSync notes that the controller must re-synchronise.
-func (qs *QuizState) changedSync() {
-
-	qs.syncUpdate = timestamp()
 }
 
 // timestamp returns a 31 bit timestamp for updates, which is easier to store in Javascript than 64 bit.

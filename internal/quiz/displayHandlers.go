@@ -51,25 +51,6 @@ func (app *Application) quizAnswers(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, template, data)
 }
 
-// End of quiz
-func (app *Application) quizEnd(w http.ResponseWriter, r *http.Request) {
-
-	ps := httprouter.ParamsFromContext(r.Context())
-	nPage, _ := strconv.Atoi(ps.ByName("nPage"))
-	puppet := ps.ByName("puppet")
-
-	// Page parameter is a dummy, so that all pages have the same number of parameters.
-	// Needed to make window.location.href = "../quizNext work.
-
-	// data for page
-	data := app.displayState.displayStatic(puppet)
-
-	// common data
-	data.dataDisplay.set(app, puppet, models.PageStatic, nPage, nosurf.Token(r))
-
-	app.render(w, r, `quiz-end.page.tmpl`, data)
-}
-
 // Final scores: controller, puppet, scoreboard or quizmaster
 func (app *Application) quizFinal(w http.ResponseWriter, r *http.Request) {
 
@@ -200,6 +181,32 @@ func (app *Application) quizStart(w http.ResponseWriter, r *http.Request) {
 	data.dataDisplay.set(app, puppet, models.PageStatic, nPage, nosurf.Token(r))
 
 	app.render(w, r, `quiz-start.page.tmpl`, data)
+}
+
+// Static page: interval or final.
+func (app *Application) quizStatic(w http.ResponseWriter, r *http.Request) {
+
+	ps := httprouter.ParamsFromContext(r.Context())
+	nPage, _ := strconv.Atoi(ps.ByName("nPage"))
+	puppet := ps.ByName("puppet")
+
+	// data for page
+	data := app.displayState.displayStatic(puppet)
+
+	// common data
+	data.dataDisplay.set(app, puppet, models.PageStatic, nPage, nosurf.Token(r))
+
+	var template string
+	switch nPage {
+	case models.StaticInterval:
+		template = `quiz-interval.page.tmpl`
+	case models.StaticEnd:
+		fallthrough
+	default:
+		template = `quiz-end.page.tmpl`
+	}
+
+	app.render(w, r, template, data)
 }
 
 // Wait for scores to be published: controller or puppet

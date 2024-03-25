@@ -364,8 +364,8 @@ func (q *QuizState) PublishRound(nRound int, fromResp bool) string {
 		((currentPage == models.PageAnswers) || (currentPage == models.PageScoresWait)) {
 		q.calculateTotalsAndRank(nRound, s)
 	} else {
-		// just set revision number for score, so the quizmaster is notified
-		q.changedPublished()
+		// notify just the quizmaster
+		q.app.displayState.changedQuizmaster()
 	}
 
 	// set next round to be scored
@@ -375,30 +375,6 @@ func (q *QuizState) PublishRound(nRound int, fromResp bool) string {
 	return `Round ` + strconv.Itoa(nRound) + ` published`
 }
 
-// StartQuiz starts a quiz contest
-func (q *QuizState) StartQuiz(live bool) string {
-
-	// serialisation
-	defer q.updatesQuiz()()
-
-	// reset scores and restart displays
-	q.restartQuiz()
-
-	s := q.app.displayState.contest
-
-	// no tick available until controller starts to send it
-	s.Tick = "*"
-
-	// select live or practice mode
-	s.Live = live
-
-	// reload the current team access tokens, in case they have been updated
-	// Team access is not allowed until the quiz has started, so it doesn't matter if they were out of date earlier.
-	q.app.cacheTeams()
-
-	// first page for controller
-	return pathToPage(`quiz-start`, DisplayController, 0, 0)
-}
 
 // addUnscored sets -1 scores for unscored teams in tie-break rounds (reset to 0 later)
 func addUnscored(scores *[]float64, nRound, toRound int) {
@@ -447,8 +423,7 @@ func (q *QuizState) restartQuiz() {
 	qc.ScoringRound = 1
 	q.dirtyQuiz = true
 
-	q.changedResponse()
-	q.changedPublished()
+	q.changedAll()
 
 	// restart displays
 	s, dUnlock := q.app.displayState.forUpdate()
