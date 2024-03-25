@@ -64,24 +64,6 @@ type RepDisplay struct {
 	Tick  string `json:"newTick"`
 }
 
-// checkSync verifies that the controller is synchronised with the server.
-// If not, it returns a resynchronisation response for the controller.
-func (d *DisplayState) checkSync(sync int) *RepDisplay {
-	if sync == d.syncUpdate {
-		return nil // ok
-	}
-
-	// treat the controller like a puppet
-	s := d.contest
-	var rd RepDisplay
-	if s.CurrentPage == models.PageStatic {
-		rd = d.getPuppetMainStatic(-1, -1, DisplayController)
-	} else {
-		rd = d.getPuppetMainRound(-1, -1, -1, DisplayController)
-	}
-	return &rd
-}
-
 // getPuppetResponse returns the updated state for puppet display.
 func (d *DisplayState) getPuppetResponse(r *ReqPuppet) RepDisplay {
 
@@ -456,16 +438,6 @@ func (d *DisplayState) pageNext(sync int) RepDisplay {
 	return RepDisplay{HRef: pathToPage(route, DisplayController, param, 0)}
 }
 
-// allowResponses sets the quiz state to accept team responses
-func (d *DisplayState) allowResponses() {
-
-	qs := &d.app.quizState
-
-	qs.quizCached.ResponseRound = d.contest.CurrentRound
-	qs.dirtyQuiz = true
-}
-
-
 // Resume quiz at current page
 //
 // Returns route for redirection.
@@ -533,6 +505,147 @@ func (d *DisplayState) resumeQuiz() string {
 	return pathToPage(route, DisplayController, param, 0)
 }
 
+// setPrompts makes prompter text for the quizmaster.
+func (d *DisplayState) setPrompts() {
+
+	qs := &d.app.quizState
+	s := d.contest
+	nRound := s.CurrentRound
+	nStatic := s.CurrentStatic
+
+	switch s.CurrentPage {
+
+	case models.PageStatic:
+
+		// start quiz
+		if nStatic == models.StaticStart {
+			d.doNow = "Welcome"
+			d.doNext = prompt('Q', nRound)
+		} else if nStatic == models.StaticInterval {
+			nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+			d.doNow = "Interval"
+			d.doNext = prompt('Q', nRound + nDefer + 1)
+		} else {
+			d.doNow = "End"
+			d.doNext = ""
+		}
+
+	case models.PageQuestions:
+
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if nRound <= nDefer {
+			// answers deferred
+			d.doNow = prompt('Q', nRound)
+			d.doNext = prompt('Q', nRound+1)
+
+		} else if d.roundFormat.combined {
+			// sudden death tie break
+			// ## assumes sudden-death only used for tie breaks
+			d.doNow = prompt('D', nRound-qs.nFullRounds)
+
+			if nRound < qs.nFullRounds+qs.nTieRounds {
+				// followed by another one
+				d.doNext  = prompt('D', nRound-qs.nFullRounds+1)
+			} else {
+				// quiz is over - there is nothing left
+				d.doNext = "Goodbye"
+			}
+
+		} else if nRound <= qs.nFullRounds {
+			// questions followed by answers for earlier round
+			d.doNow = prompt('Q', nRound)
+			d.doNext  = prompt('A', nRound-nDefer)
+
+		} else {
+			// tie-break questions followed by answers
+			d.doNow = prompt('T', nRound-qs.nFullRounds)
+			d.doNext  = prompt('U', nRound-qs.nFullRounds)
+		}
+
+	case models.PageAnswers:
+
+		// scores always follow answers
+		if nRound <= qs.nFullRounds {
+			// normal round
+			d.doNow = "Answers"
+			d.doNext  = "Scores"
+
+		} else {
+			// tie-break
+			d.doNow = prompt('U', nRound-qs.nFullRounds)
+			d.doNext  = prompt('V', nRound-qs.nFullRounds)
+		}
+	case models.PageScoresWait:
+
+		// scores followed by ..
+		d.doNow = "Waiting"
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if d.roundFormat.interval {
+			// .. interval
+			d.doNext = "Interval"
+
+		} else if nRound < qs.nFullRounds-nDefer {
+			// .. next round questions
+			d.doNext  = prompt('Q', nRound+nDefer+1)
+
+		} else if nRound < qs.nFullRounds {
+			// .. catchup round answers
+			d.doNext  = prompt('A', nRound+1)
+		} else {
+			d.doNext = "Goodbye"
+		}
+
+	case models.PageScores:
+
+		// scores followed by ..
+		d.doNow = "Scores"
+		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
+
+		if d.roundFormat.interval {
+			// .. interval
+			d.doNext = "Interval"
+
+		} else if nRound < qs.nFullRounds-nDefer {
+			// .. next round questions
+			d.doNext  = prompt('Q', nRound+nDefer+1)
+
+		} else {
+			// .. catchup round answers
+			d.doNext  = prompt('A', nRound+1)
+		}
+
+	case models.PageFinal:
+
+		if nRound == qs.nFullRounds {
+			// final scores followed by tie-break or end
+			d.doNow = "Scores"
+			if d.isTied && qs.nTieRounds > 0 {
+				d.doNext = prompt('T', 1) // need a tie-break, if we have one
+			} else {
+				d.doNext = "Goodbye"
+			}
+
+		} else if nRound < qs.nFullRounds+qs.nTieRounds {
+			// tie-break scores followed by another tie break, or end
+			nTie := nRound-qs.nFullRounds
+			d.doNow = prompt('V', nTie)
+			if d.isTied && nTie < qs.nTieRounds {
+				d.doNext = prompt('T', nTie+1) // need another tie-break, if we have one
+			} else {
+				d.doNext  = "Goodbye"
+			}
+		}
+
+	default:
+		d.doNow = "End"
+		d.doNext = ""
+	}
+
+	d.changedQuizmaster() // update quizmaster's display
+}
+
 // Set current position for puppet displays
 
 func (d *DisplayState) setPuppet(r *ReqControlIndex) RepDisplay {
@@ -584,6 +697,8 @@ func (d *DisplayState) startQuiz(live bool) string {
 	return pathToPage(`quiz-start`, DisplayController, 0, 0)
 }
 
+// ==== Support Functions ====
+
 // afterScores steps to the next page following scores or the interval. It returns the route.
 func (d *DisplayState) afterScores(nRound int) (route string) {
 
@@ -628,6 +743,35 @@ func (d *DisplayState) afterScores(nRound int) (route string) {
 	}
 	return
 }
+
+// allowResponses sets the quiz state to accept team responses
+func (d *DisplayState) allowResponses() {
+
+	qs := &d.app.quizState
+
+	qs.quizCached.ResponseRound = d.contest.CurrentRound
+	qs.dirtyQuiz = true
+}
+
+
+// checkSync verifies that the controller is synchronised with the server.
+// If not, it returns a resynchronisation response for the controller.
+func (d *DisplayState) checkSync(sync int) *RepDisplay {
+	if sync == d.syncUpdate {
+		return nil // ok
+	}
+
+	// treat the controller like a puppet
+	s := d.contest
+	var rd RepDisplay
+	if s.CurrentPage == models.PageStatic {
+		rd = d.getPuppetMainStatic(-1, -1, DisplayController)
+	} else {
+		rd = d.getPuppetMainRound(-1, -1, -1, DisplayController)
+	}
+	return &rd
+}
+
 
 // Return the number of rounds for which answers are deferred
 
@@ -999,20 +1143,6 @@ func (d *DisplayState) prepareForScores(nRound int) {
 	}
 }
 
-// Quiz is retarted. Called by quizState while serialised.
-
-func (d *DisplayState) restartQuiz(s *models.Contest) {
-
-	d.isTied = false
-	s.CurrentPage = models.PageStatic
-	s.CurrentStatic = models.StaticStart
-	s.QuizmasterRound = 0
-	s.ScoreboardRound = 0
-
-	// assume touchscreen required
-	s.TouchController = true
-}
-
 // prompt returns the prompter text for a round
 func prompt(page rune, round int) string {
 	switch page {
@@ -1035,145 +1165,18 @@ func prompt(page rune, round int) string {
 	}
 }
 
-// setPrompts makes prompter text for the quizmaster.
-func (d *DisplayState) setPrompts() {
+// Quiz is retarted. Called by quizState while serialised.
 
-	qs := &d.app.quizState
-	s := d.contest
-	nRound := s.CurrentRound
-	nStatic := s.CurrentStatic
+func (d *DisplayState) restartQuiz(s *models.Contest) {
 
-	switch s.CurrentPage {
+	d.isTied = false
+	s.CurrentPage = models.PageStatic
+	s.CurrentStatic = models.StaticStart
+	s.QuizmasterRound = 0
+	s.ScoreboardRound = 0
 
-	case models.PageStatic:
-
-		// start quiz
-		if nStatic == models.StaticStart {
-			d.doNow = "Welcome"
-			d.doNext = prompt('Q', nRound)
-		} else if nStatic == models.StaticInterval {
-			nDefer := d.deferAnswers(nRound, qs.nFullRounds)
-			d.doNow = "Interval"
-			d.doNext = prompt('Q', nRound + nDefer + 1)
-		} else {
-			d.doNow = "End"
-			d.doNext = ""
-		}
-
-	case models.PageQuestions:
-
-		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
-
-		if nRound <= nDefer {
-			// answers deferred
-			d.doNow = prompt('Q', nRound)
-			d.doNext = prompt('Q', nRound+1)
-
-		} else if d.roundFormat.combined {
-			// sudden death tie break
-			// ## assumes sudden-death only used for tie breaks
-			d.doNow = prompt('D', nRound-qs.nFullRounds)
-
-			if nRound < qs.nFullRounds+qs.nTieRounds {
-				// followed by another one
-				d.doNext  = prompt('D', nRound-qs.nFullRounds+1)
-			} else {
-				// quiz is over - there is nothing left
-				d.doNext = "Goodbye"
-			}
-
-		} else if nRound <= qs.nFullRounds {
-			// questions followed by answers for earlier round
-			d.doNow = prompt('Q', nRound)
-			d.doNext  = prompt('A', nRound-nDefer)
-
-		} else {
-			// tie-break questions followed by answers
-			d.doNow = prompt('T', nRound-qs.nFullRounds)
-			d.doNext  = prompt('U', nRound-qs.nFullRounds)
-		}
-
-	case models.PageAnswers:
-
-		// scores always follow answers
-		if nRound <= qs.nFullRounds {
-			// normal round
-			d.doNow = "Answers"
-			d.doNext  = "Scores"
-
-		} else {
-			// tie-break
-			d.doNow = prompt('U', nRound-qs.nFullRounds)
-			d.doNext  = prompt('V', nRound-qs.nFullRounds)
-		}
-	case models.PageScoresWait:
-
-		// scores followed by ..
-		d.doNow = "Waiting"
-		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
-
-		if d.roundFormat.interval {
-			// .. interval
-			d.doNext = "Interval"
-
-		} else if nRound < qs.nFullRounds-nDefer {
-			// .. next round questions
-			d.doNext  = prompt('Q', nRound+nDefer+1)
-
-		} else if nRound < qs.nFullRounds {
-			// .. catchup round answers
-			d.doNext  = prompt('A', nRound+1)
-		} else {
-			d.doNext = "Goodbye"
-		}
-
-	case models.PageScores:
-
-		// scores followed by ..
-		d.doNow = "Scores"
-		nDefer := d.deferAnswers(nRound, qs.nFullRounds)
-
-		if d.roundFormat.interval {
-			// .. interval
-			d.doNext = "Interval"
-
-		} else if nRound < qs.nFullRounds-nDefer {
-			// .. next round questions
-			d.doNext  = prompt('Q', nRound+nDefer+1)
-
-		} else {
-			// .. catchup round answers
-			d.doNext  = prompt('A', nRound+1)
-		}
-
-	case models.PageFinal:
-
-		if nRound == qs.nFullRounds {
-			// final scores followed by tie-break or end
-			d.doNow = "Scores"
-			if d.isTied && qs.nTieRounds > 0 {
-				d.doNext = prompt('T', 1) // need a tie-break, if we have one
-			} else {
-				d.doNext = "Goodbye"
-			}
-
-		} else if nRound < qs.nFullRounds+qs.nTieRounds {
-			// tie-break scores followed by another tie break, or end
-			nTie := nRound-qs.nFullRounds
-			d.doNow = prompt('V', nTie)
-			if d.isTied && nTie < qs.nTieRounds {
-				d.doNext = prompt('T', nTie+1) // need another tie-break, if we have one
-			} else {
-				d.doNext  = "Goodbye"
-			}
-		}
-
-	default:
-		d.doNow = "End"
-		d.doNext = ""
-	}
-
-	d.changedQuizmaster() // update quizmaster's display
+	// assume touchscreen required
+	s.TouchController = true
 }
 
 // Choose scores or waiting page.
