@@ -33,7 +33,6 @@ For more information, including setup and configuration, see https://quizinch.co
 
 Go Packages
 
-- [disintegration/imaging](https://github.com/disintegration/imaging) Image processing.
 - [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) MySQL driver.
 - [golangcollege/sessions](https://github.com/golangcollege/sessions) HTTP session cookies.
 - [ilyakaznacheev/cleanenv](https://github.com/ilyakaznacheev/cleanenv) Read configuration file and environment variables.

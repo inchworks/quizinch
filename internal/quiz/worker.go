@@ -22,8 +22,8 @@ package quiz
 import (
 	"runtime"
 
-	"github.com/inchworks/webparts/etx"
-	"github.com/inchworks/webparts/uploader"
+	"github.com/inchworks/webparts/v2/etx"
+	"github.com/inchworks/webparts/v2/uploader"
 )
 
 // Implement RM interface for webparts.etx.
@@ -86,14 +86,18 @@ func (s *QuizState) worker(
 	}
 }
 
-// onUpdateRound processes an updated or deleted round.
-func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
+// onBindRound sets uploaded media for an updated round.
+func (s *QuizState) onBindRound(roundId int64, tx etx.TxId) int {
+
+	// #### something needed to handle round deletion??
+
+	defer s.updatesQuiz()()
 
 	// setup
-	bind := s.app.uploader.StartBind(roundId, tx)
+	bind := s.app.uploader.StartBind(tx)
 
 	// set versioned media, and update round
-	if st := s.updateMedia(roundId, bind); st != 0 {
+	if st := s.bindFiles(roundId, bind); st != 0 {
 		return st
 	}
 
@@ -104,7 +108,6 @@ func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
 	}
 
 	// terminate the extended transaction
-	defer s.updatesQuiz()()
 	if err := s.app.tm.End(tx); err != nil {
 		return s.rollback(statusTeapot, err)
 	} else {
@@ -112,8 +115,30 @@ func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
 	}
 }
 
-// updateMedia changes media versions for a round.
-func (s *QuizState) updateMedia(roundId int64, bind *uploader.Bind) int {
+// onUpdateRound processes an updated or deleted round.
+func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
+
+	// setup
+	claim := s.app.uploader.StartClaim(tx)
+
+	// identify which uploaded files are referenced
+	defer s.updatesNone()()
+	s.claimFiles(roundId, claim)
+
+	// remove unclaimed files and continue when all uploads have been processed
+	claim.End(func(err error) {
+		if err == nil {
+			s.onBindRound(roundId, tx)
+		} else {
+			s.app.log(err)
+		}
+		s.app.tm.Do(tx) // next operation of transaction
+	})
+	return 0
+}
+
+// bindFiles updates questions to show uploaded media after processing.
+func (s *QuizState) bindFiles(roundId int64, bind *uploader.Bind) int {
 
 	// serialise display state while slides are changing
 	defer s.updatesQuiz()()
@@ -121,7 +146,7 @@ func (s *QuizState) updateMedia(roundId int64, bind *uploader.Bind) int {
 	// check if this is an update or deletion
 	round := s.app.RoundStore.GetIf(roundId)
 	if round == nil {
-		// No questions to be updated. A following call to imager.RemoveVersions will delete all media.
+		// No questions to be updated. A following call to bind.End will delete uploaded files for this transaction.
 		return 0
 	}
 
@@ -149,7 +174,39 @@ func (s *QuizState) updateMedia(roundId int64, bind *uploader.Bind) int {
 		}
 	}
 
+	// #### handle error
 	s.app.RoundStore.Update(round)
 
 	return 0
+}
+
+// claimFiles claims media files for a round.
+func (s *QuizState) claimFiles(roundId int64, claim *uploader.Claim) {
+
+	// check if this is an update or deletion
+	round := s.app.RoundStore.GetIf(roundId)
+	if round == nil {
+		// No questions to be updated. A following call to Bind.End will delete any uploaded images.
+		return
+	}
+
+	// check each slide for an updated media file
+	qs := s.app.QuestionStore.ForRound(roundId)
+	for _, q := range qs {
+
+		if q.File != "" {
+			claim.File(q.File)
+		}
+	}
+}
+
+// deleteFiles performs immediate deletion of all images for a round.
+func (s *QuizState) deleteFiles(roundId int64) {
+	for _, q := range s.app.QuestionStore.ForRound(roundId) {
+		if q.File != "" {
+			if err := s.app.uploader.DeleteNow(q.File); err != nil {
+				s.app.log(err)
+			}
+		}
+	}
 }

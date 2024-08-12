@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/inchworks/usage"
-	"github.com/inchworks/webparts/users"
+	"github.com/inchworks/webparts/v2/users"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/nosurf"
 

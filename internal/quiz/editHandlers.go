@@ -24,8 +24,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/inchworks/webparts/etx"
-	"github.com/inchworks/webparts/multiforms"
+	"github.com/inchworks/webparts/v2/etx"
+	"github.com/inchworks/webparts/v2/multiforms"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/nosurf"
 
@@ -41,9 +41,16 @@ func (app *Application) postFormMedia(w http.ResponseWriter, r *http.Request) {
 
 	timestamp := r.FormValue("timestamp")
 
+	vs := r.FormValue("version")
+	v, err := strconv.Atoi(vs)
+	if err != nil {
+		app.httpBadRequest(w, errors.New("Bad media version."))
+		return
+	}
+
 	// multipart form
 	// (The limit, 10 MB, is just for memory use, not the size of the upload)
-	err := r.ParseMultipartForm(10 << 20)
+	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		app.httpBadRequest(w, err)
 		return
@@ -74,7 +81,7 @@ func (app *Application) postFormMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var s string
-	err, byUser := app.uploader.Save(fh, id)
+	err, byUser := app.uploader.Save(fh, id, v)
 	if err != nil {
 		if byUser {
 			s = err.Error()
@@ -151,15 +158,14 @@ func (app *Application) postFormQuestions(w http.ResponseWriter, r *http.Request
 	status := app.quizState.onEditQuestions(nRound, tx, items)
 	if status == 0 {
 
-		// bind updated media, now that update is committed
-		app.uploader.DoNext(tx)
+		// claim updated media, now that update is committed
+		app.tm.Do(tx)
 
 		http.Redirect(w, r, "/setup-quiz", http.StatusSeeOther)
 
 	} else {
 		http.Error(w, http.StatusText(status), status)
 	}
-
 }
 
 // Main form to setup quiz
@@ -250,7 +256,7 @@ func (app *Application) postFormRounds(w http.ResponseWriter, r *http.Request) {
 	status, tx := app.quizState.onEditRounds(rs)
 	if status == 0 {
 		// bind updated media, now that update is committed
-		app.tm.DoNext(tx)
+		app.tm.Do(tx)
 
 		http.Redirect(w, r, "/setup-quiz", http.StatusSeeOther)
 

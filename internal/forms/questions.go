@@ -20,8 +20,8 @@ package forms
 import (
 	"net/url"
 
-	"github.com/inchworks/webparts/multiforms"
-	"github.com/inchworks/webparts/uploader"
+	"github.com/inchworks/webparts/v2/multiforms"
+	"github.com/inchworks/webparts/v2/uploader"
 
 	"inchworks.com/quiz/internal/models"
 )
@@ -37,6 +37,7 @@ type Question struct {
 	Question  string
 	Answer    string
 	MediaName string
+	Version   int
 }
 
 type ValidTypeFunc func(string) bool
@@ -53,7 +54,7 @@ func NewQuestions(data url.Values, token string) *Questions {
 // Add appends a question sub-form.
 func (f *Questions) Add(index int, q *models.Question) {
 
-	_, media, _ := uploader.NameFromFile(q.File)
+	media := uploader.NameFromFile(q.File)
 
 	f.Children = append(f.Children, &Question{
 		Child:     multiforms.Child{Parent: f.Form, ChildIndex: index},
@@ -92,6 +93,7 @@ func (f *Questions) GetQuestions(vt ValidTypeFunc) (items []*Question, err error
 			Question:  f.ChildText("question", i, ix, 2, 512),
 			Answer:    f.ChildText("answer", i, ix, 1, 512),
 			MediaName: f.ChildFile("mediaName", i, ix, vt),
+			Version:   f.ChildPositive("mediaVersion", i, ix),
 		})
 	}
 

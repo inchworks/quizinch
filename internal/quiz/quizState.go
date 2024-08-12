@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inchworks/webparts/etx"
+	"github.com/inchworks/webparts/v2/etx"
 
 	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
@@ -684,10 +684,5 @@ func (qs *QuizState) updatesNone() func() {
 func (q *QuizState) txBeginRound(tx etx.TxId, req *OpUpdateRound) error {
 
 	// ## could log error
-	return q.app.tm.BeginNext(tx, q, OpRound, req)
-}
-
-// txShow requests a show update as a transaction, so that it will be done even if the server restarts.
-func (q *QuizState) txRound(req *OpUpdateRound, opType int) error {
-	return q.app.tm.SetNext(req.tx, q, opType, req)
+	return q.app.tm.AddNext(tx, q, OpRound, req)
 }

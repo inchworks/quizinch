@@ -26,9 +26,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/inchworks/webparts/etx"
-	"github.com/inchworks/webparts/multiforms"
-	"github.com/inchworks/webparts/uploader"
+	"github.com/inchworks/webparts/v2/etx"
+	"github.com/inchworks/webparts/v2/multiforms"
+	"github.com/inchworks/webparts/v2/uploader"
 
 	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
@@ -87,6 +87,11 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 	// serialisation
 	defer q.updatesQuiz()()
 
+	// commit uploads, unless request has been running so long that we have discarded them
+	if err := q.app.uploader.Commit(tx); err != nil {
+		return q.rollback(http.StatusRequestTimeout, err)
+	}
+
 	// compare modified questions against current question, and update
 	r, _ := q.app.RoundStore.GetByN(nRound)
 	qsDest := q.app.QuestionStore.ForRound(r.Id)
@@ -101,6 +106,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 
 		if iSrc == nSrc {
 			// no more source questions - delete from destination
+			q.app.uploader.Delete(tx, qsDest[iDest].File)
 			q.app.QuestionStore.DeleteId(qsDest[iDest].Id)
 			updated = true
 			iDest++
@@ -114,7 +120,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 				QuizOrder: qsSrc[iSrc].QuizOrder,
 				Question:  q.sanitize(qsSrc[iSrc].Question, ""),
 				Answer:    q.sanitize(qsSrc[iSrc].Answer, ""),
-				File:      uploader.FileFromName(tx, mediaName),
+				File:      uploader.FileFromName(tx, qsSrc[iSrc].Version, mediaName),
 			}
 			q.app.QuestionStore.Update(&qd)
 			updated = true
@@ -124,6 +130,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 			ix := qsSrc[iSrc].ChildIndex
 			if ix > iDest {
 				// source question removed - delete from destination
+				q.app.uploader.Delete(tx, qsDest[iDest].File)
 				q.app.QuestionStore.DeleteId(qsDest[iDest].Id)
 				updated = true
 				iDest++
@@ -133,7 +140,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 				// (checking media name at this point, version change will be handled later)
 				mediaName := uploader.CleanName(qsSrc[iSrc].MediaName)
 				qDest := qsDest[iDest]
-				_, dstName, _ := uploader.NameFromFile(qDest.File)
+				dstName := uploader.NameFromFile(qDest.File)
 				if qsSrc[iSrc].QuizOrder != qDest.QuizOrder ||
 					qsSrc[iSrc].Question != qDest.Question ||
 					qsSrc[iSrc].Answer != qDest.Answer ||
@@ -146,7 +153,7 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 					// If the media name hasn't changed, leave the old version in use for now.
 					// We'll detect a version change later.
 					if mediaName != dstName {
-						qDest.File = uploader.FileFromName(tx, mediaName)
+						qDest.File = uploader.FileFromName(tx, qsSrc[iSrc].Version, mediaName)
 					}
 
 					q.app.QuestionStore.Update(qDest)
@@ -183,12 +190,11 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 	}
 
 	// request worker to generate media versions, and remove unused images
-	if err := q.txRound(
+	if err := q.app.tm.AddNext(tx, q, OpRound, 
 		&OpUpdateRound{
 			RoundId: r.Id,
 			tx:      tx,
-		},
-		OpRound); err != nil {
+		}); err != nil {
 		return q.rollback(http.StatusInternalServerError, err)
 	}
 
@@ -317,7 +323,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 
 		if iSrc == nSrc {
 			// no more source rounds - delete from destination
-			q.onRemoveRound(tx, rsDest[iDest].Id)
+			q.onRemoveRound(rsDest[iDest].Id)
 			restart = true
 			updated = true
 			iDest++
@@ -335,7 +341,7 @@ func (q *QuizState) onEditRounds(rsSrc []*forms.Round) (int, etx.TxId) {
 			ix := rsSrc[iSrc].ChildIndex
 			if ix > iDest {
 				// source round removed - delete from destination
-				q.onRemoveRound(tx, rsDest[iDest].Id)
+				q.onRemoveRound(rsDest[iDest].Id)
 				restart = true
 				updated = true
 				iDest++
@@ -485,18 +491,15 @@ func (q *QuizState) rounds() []*models.Round {
 	return q.app.RoundStore.All()
 }
 
-// onRemoveProcessing when a round is removed
+// onRemoveRound performs cleanup when a round is removed
 
-func (q *QuizState) onRemoveRound(tx etx.TxId, roundId int64) error {
+func (q *QuizState) onRemoveRound(roundId int64) error {
+
+	// delete files
+	q.deleteFiles(roundId)
 
 	// questions will be removed by cascade delete
-	q.app.RoundStore.DeleteId(roundId)
-
-	// request worker to remove media files
-	return q.txBeginRound(tx, &OpUpdateRound{
-		RoundId: roundId,
-		tx:      0},
-	)
+	return q.app.RoundStore.DeleteId(roundId)
 }
 
 // Processing when a team is removed

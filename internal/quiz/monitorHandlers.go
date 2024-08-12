@@ -22,7 +22,7 @@ package quiz
 import (
 	"net/http"
 
-	"github.com/inchworks/webparts/monitor"
+	"github.com/inchworks/webparts/v2/monitor"
 )
 
 type RepMonitor struct {

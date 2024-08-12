@@ -34,13 +34,13 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 
 	"github.com/inchworks/usage"
-	"github.com/inchworks/webparts/etx"
-	"github.com/inchworks/webparts/limithandler"
-	"github.com/inchworks/webparts/monitor"
-	"github.com/inchworks/webparts/multiforms"
-	"github.com/inchworks/webparts/stack"
-	"github.com/inchworks/webparts/uploader"
-	"github.com/inchworks/webparts/users"
+	"github.com/inchworks/webparts/v2/etx"
+	"github.com/inchworks/webparts/v2/limithandler"
+	"github.com/inchworks/webparts/v2/monitor"
+	"github.com/inchworks/webparts/v2/multiforms"
+	"github.com/inchworks/webparts/v2/stack"
+	"github.com/inchworks/webparts/v2/uploader"
+	"github.com/inchworks/webparts/v2/users"
 
 	"inchworks.com/quiz/internal/models"
 	"inchworks.com/quiz/internal/models/mysql"
@@ -367,12 +367,17 @@ func (app *Application) LogThreat(msg string, r *http.Request) {
 }
 
 // OnAddUser is called to add any additional application data for a user.
-func (app *Application) OnAddUser(user *users.User) {
+func (app *Application) OnAddUser(etx etx.TxId, user *users.User) {
 	// not needed for this application
 }
 
 // OnRemoveUser is called to delete any application data for a user.
 func (app *Application) OnRemoveUser(tx etx.TxId, user *users.User) {
+	// not needed for this application
+}
+
+// OnUpdateUser is called to change any application data for a modified user.
+func (app *Application) OnUpdateUser(tx etx.TxId, from *users.User, to *users.User) {
 	// not needed for this application
 }
 

@@ -24,7 +24,7 @@ import (
 
 	"inchworks.com/quiz/internal/models"
 
-	"github.com/inchworks/webparts/etx"
+	"github.com/inchworks/webparts/v2/etx"
 	"github.com/jmoiron/sqlx"
 )
 

@@ -25,7 +25,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/inchworks/webparts/users"
+	"github.com/inchworks/webparts/v2/users"
 	"inchworks.com/quiz/internal/models"
 )
 
