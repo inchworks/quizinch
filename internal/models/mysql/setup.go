@@ -29,7 +29,7 @@ import (
 	"inchworks.com/quiz/internal/models"
 )
 
-var cmds = [...]string{
+var cmdsV0 = [...]string{
 
 	"SET NAMES utf8;",
 
@@ -65,14 +65,6 @@ var cmds = [...]string{
 		scoring_round int(11) NOT NULL,
 		PRIMARY KEY (id)
 	  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;`,
-
-	`CREATE TABLE redo (
-		id BIGINT NOT NULL,
-		manager varchar(32) COLLATE utf8_unicode_ci NOT NULL,
-		optype int(11) NOT NULL,
-		operation JSON NOT NULL,
-		PRIMARY KEY (id)
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;`,
 
 	`CREATE TABLE response (
 		id int(11) NOT NULL AUTO_INCREMENT,
@@ -170,6 +162,20 @@ var cmds = [...]string{
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;`,
 }
 
+var cmdsRedo = [...]string{
+
+	`CREATE TABLE redoV2 (
+		id BIGINT NOT NULL,
+		tx BIGINT NOT NULL,
+		manager varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+		redotype int(11) NOT NULL,
+		delay int(11) NOT NULL,
+		optype int(11) NOT NULL,
+		operation JSON NOT NULL,
+		PRIMARY KEY (id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;`,
+}
+
 // Setup new database, if it has no tables.
 // Add quiz record and specified administrator if needed.
 //
@@ -183,7 +189,7 @@ func Setup(stQuiz *QuizStore, stSess *ContestStore, stUser *UserStore, quizId in
 		if driverErr, ok := err.(*mysql.MySQLError); ok {
 			if driverErr.Number == 1146 {
 				// no quiz table - make the database
-				err = setupTables(stQuiz.DBX, *stQuiz.ptx)
+				err = setupTables(stQuiz.DBX, *stQuiz.ptx, cmdsV0[:])
 			}
 		} else if stQuiz.convertError(err) == models.ErrNoRecord {
 			// ok if no gallery record yet
@@ -265,6 +271,19 @@ func MigrateQuiz1(st *QuizStore, tx *sqlx.Tx) error {
 	return err
 }
 
+// MigrateRedo2 adds the redo V2 table. Needed for version 1.0.5.
+func MigrateRedo2(stRedo *RedoStore) error {
+
+	if _, err := stRedo.Count(); err == nil {
+		return nil
+	}
+
+	if err := setupTables(stRedo.DBX, *stRedo.ptx, cmdsRedo[:]); err != nil {
+		return err
+	}
+	
+	return nil
+}
 
 // create admin user
 
@@ -290,7 +309,7 @@ func setupAdmin(st *UserStore, adminName string, adminPW string) error {
 
 // create database tables
 
-func setupTables(db *sqlx.DB, tx *sqlx.Tx) error {
+func setupTables(_ *sqlx.DB, tx *sqlx.Tx, cmds []string) error {
 
 	for _, cmd := range cmds {
 		if _, err := tx.Exec(cmd); err != nil {

@@ -17,7 +17,7 @@
 
 package quiz
 
-// Worker goroutine for all background processing
+// Worker for ETX processing and any background processing
 
 import (
 	"runtime"
@@ -28,9 +28,9 @@ import (
 
 // Implement RM interface for webparts.etx.
 
-// Operation types
+// Operation types (keep unchanged)
 const (
-	OpRound = iota
+	OpRound = 0
 )
 
 // We need an arbitary status code for rollback(). This one is ideal!
@@ -53,11 +53,10 @@ func (s *QuizState) ForOperation(opType int) etx.Op {
 // Do operation requested via TM.
 func (s *QuizState) Operation(id etx.TxId, opType int, op etx.Op) {
 
-	// send the request to the worker
 	switch req := op.(type) {
 	case *OpUpdateRound:
-		req.tx = id
-		s.app.chRound <- *req
+		// a round has been updated or removed
+		s.onUpdateRound(req.RoundId, req.tx)
 
 	default:
 		s.app.errorLog.Print("Unknown TX operation")
@@ -66,18 +65,14 @@ func (s *QuizState) Operation(id etx.TxId, opType int, op etx.Op) {
 
 // worker does all background processing for QuizInch.
 func (s *QuizState) worker(
-	chRound <-chan OpUpdateRound,
 	done <-chan bool) {
 
+	// #### actually we don't need a worker in this implementation!
 	for {
 		// returns to client sooner?
 		runtime.Gosched()
 
 		select {
-		case req := <-chRound:
-
-			// a round has been updated or removed
-			s.onUpdateRound(req.RoundId, req.tx)
 
 		case <-done:
 			// ## do something to finish other pending requests
@@ -139,9 +134,6 @@ func (s *QuizState) onUpdateRound(roundId int64, tx etx.TxId) int {
 
 // bindFiles updates questions to show uploaded media after processing.
 func (s *QuizState) bindFiles(roundId int64, bind *uploader.Bind) int {
-
-	// serialise display state while slides are changing
-	defer s.updatesQuiz()()
 
 	// check if this is an update or deletion
 	round := s.app.RoundStore.GetIf(roundId)

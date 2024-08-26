@@ -79,13 +79,16 @@ type Configuration struct {
 	AdminPassword string `yaml:"admin-password" env:"admin-password" env-default:"<your-password>"`
 
 	// image sizes
-	MaxW      int `yaml:"image-width" env-default:"1920"` // maximum stored image dimensions
-	MaxH      int `yaml:"image-height" env-default:"1200"`
-	ThumbW    int `yaml:"thumbnail-width" env-default:"278"` // thumbnail size
-	ThumbH    int `yaml:"thumbnail-height" env-default:"208"`
-	MaxUpload int `yaml:"max-upload" env-default:"512"` // maximum file upload (megabytes)
+	MaxW       int `yaml:"image-width" env-default:"1920"` // maximum stored image dimensions
+	MaxH       int `yaml:"image-height" env-default:"1200"`
+	MaxAV      int `yaml:"max-audio-visual" env-default:"64"` // maximum stored AV file size (megabytes)
+	ThumbW     int `yaml:"thumbnail-width" env-default:"278"` // thumbnail size
+	ThumbH     int `yaml:"thumbnail-height" env-default:"208"`
+	MaxDecoded int `yaml:"max-decoded" env-default:"512"` // maximum decoded image size (megabytes)
+	MaxUpload  int `yaml:"max-upload" env-default:"512"`  // maximum file upload (megabytes)
 
 	// operational settings
+	DropDelay       time.Duration `yaml:"drop-delay" env:"drop-delay" env-default:"10s"`        // delay before access drops and deletes are finalised. Units h.
 	MaxUploadAge    time.Duration `yaml:"max-upload-age" env:"max-upload-age" env-default:"1h"` // maximum time for a round update. Units m or h.
 	MonitorInterval int           `yaml:"monitor-interval" env-default:"5000"`                  // monitor display (mS)
 	SlideItems      int           `yaml:"slide-items" env-default:"10"`                         // default maximum items per slide
@@ -151,10 +154,6 @@ type Application struct {
 	displayState DisplayState
 	quizState    QuizState
 
-	// Channels to background worker
-	chRound chan OpUpdateRound
-	chDone  chan bool
-
 	// private components
 	Monitor  monitor.Monitor
 	StaticFS fs.FS
@@ -178,12 +177,20 @@ func New(cfg *Configuration, errorLog *log.Logger, infoLog *log.Logger, threatLo
 	// package templates
 	var pts []fs.FS
 
-	// templates for user management
-	pt, err := fs.Sub(users.WebFiles, "web/template")
+	// template for uploader
+	pt, err := fs.Sub(uploader.WebFiles, "web/template")
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 	pts = append(pts, pt)
+
+	// templates for user management
+	pt, err = fs.Sub(users.WebFiles, "web/template")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	pts = append(pts, pt)
+	
 
 	// application templates
 	forApp, err := fs.Sub(web.Files, "template")
@@ -235,19 +242,18 @@ func New(cfg *Configuration, errorLog *log.Logger, infoLog *log.Logger, threatLo
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+	staticUploader, err := fs.Sub(uploader.WebFiles, "web/static")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	// embedded static files from app
 	staticApp, err := fs.Sub(web.Files, "static")
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	staticUploader, err := fs.Sub(uploader.WebFiles, "web/static")
-	if err != nil {
-		errorLog.Fatal(err)
-	}
 
 	// combine embedded static files with site customisation
-	// ## perhaps site resources should be under "static"?
 	app.StaticFS, err = stack.NewFS(staticForms, staticUploader, staticApp, os.DirFS(SitePath))
 	if err != nil {
 		errorLog.Fatal(err)
@@ -268,8 +274,11 @@ func New(cfg *Configuration, errorLog *log.Logger, infoLog *log.Logger, threatLo
 		FilePath:     MediaPath,
 		MaxW:         app.cfg.MaxW,
 		MaxH:         app.cfg.MaxH,
+		MaxDecoded:   app.cfg.MaxDecoded * 1024 * 1024,
+		MaxSize:      app.cfg.MaxAV * 1024 * 1024,
 		ThumbW:       app.cfg.ThumbW,
 		ThumbH:       app.cfg.ThumbH,
+		DeleteAfter:  app.cfg.DropDelay,
 		MaxAge:       app.cfg.MaxUploadAge,
 		SnapshotAt:   app.cfg.VideoSnapshot,
 		AudioTypes:   app.cfg.AudioTypes,
@@ -301,13 +310,6 @@ func New(cfg *Configuration, errorLog *log.Logger, infoLog *log.Logger, threatLo
 	app.displayState.Init(quizSess)
 	app.cacheTeams()
 
-	// make worker channels
-	app.chDone = make(chan bool, 1) // closing this signals worker goroutines to return
-	app.chRound = make(chan OpUpdateRound, 10)
-
-	// start background worker
-	go app.quizState.worker(app.chRound, app.chDone)
-
 	// redo any pending operations
 	infoLog.Print("Starting operation recovery")
 	if err := app.tm.Recover(&app.quizState, app.uploader); err != nil {
@@ -338,7 +340,6 @@ func (app *Application) Stop() {
 		app.lhs.Stop()
 		app.recorder.Stop()
 	}
-	close(app.chDone)
 }
 
 // ** INTERFACE FUNCTIONS FOR WEBPARTS/USERS **
@@ -439,7 +440,7 @@ func (app *Application) initStores(cfg *Configuration) (*models.Quiz, *models.Co
 	if err := mysql.MigrateQuiz1(app.QuizStore, app.tx); err != nil {
 		app.errorLog.Fatal(err)
 	}
-	
+
 	// fast display refresh for local server, slower for online
 	var refresh int
 	if app.isOnline {
@@ -458,6 +459,11 @@ func (app *Application) initStores(cfg *Configuration) (*models.Quiz, *models.Co
 	app.RoundStore.QuizId = quiz.Id
 	app.ScoreStore.QuizId = quiz.Id
 	app.TeamStore.QuizId = quiz.Id
+
+	// database changes from previous version(s)
+	if err = mysql.MigrateRedo2(app.redoStore); err != nil {
+		app.errorLog.Fatal(err)
+	}
 
 	return quiz, sess
 }

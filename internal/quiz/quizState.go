@@ -26,8 +26,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inchworks/webparts/v2/etx"
-
 	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
 )
@@ -678,11 +676,4 @@ func (qs *QuizState) updatesNone() func() {
 		// release lock
 		qs.muQuiz.RUnlock()
 	}
-}
-
-// txBeginRound requests a round update as a new extended transaction.
-func (q *QuizState) txBeginRound(tx etx.TxId, req *OpUpdateRound) error {
-
-	// ## could log error
-	return q.app.tm.AddNext(tx, q, OpRound, req)
 }

@@ -137,22 +137,20 @@ func (q *QuizState) onEditQuestions(nRound int, tx etx.TxId, qsSrc []*forms.Ques
 
 			} else if ix == iDest {
 				// check if details changed
-				// (checking media name at this point, version change will be handled later)
-				mediaName := uploader.CleanName(qsSrc[iSrc].MediaName)
 				qDest := qsDest[iDest]
-				dstName := uploader.NameFromFile(qDest.File)
 				if qsSrc[iSrc].QuizOrder != qDest.QuizOrder ||
 					qsSrc[iSrc].Question != qDest.Question ||
 					qsSrc[iSrc].Answer != qDest.Answer ||
-					mediaName != dstName {
+					qsSrc[iSrc].Version != 0 {
 
 					qDest.QuizOrder = qsSrc[iSrc].QuizOrder
 					qDest.Question = q.sanitize(qsSrc[iSrc].Question, qDest.Question)
 					qDest.Answer = q.sanitize(qsSrc[iSrc].Answer, qDest.Answer)
 
-					// If the media name hasn't changed, leave the old version in use for now.
-					// We'll detect a version change later.
-					if mediaName != dstName {
+					if qsSrc[iSrc].Version != 0 {
+						// replace media file
+						q.app.uploader.Delete(tx, qsDest[iDest].File)
+						mediaName := uploader.CleanName(qsSrc[iSrc].MediaName)
 						qDest.File = uploader.FileFromName(tx, qsSrc[iSrc].Version, mediaName)
 					}
 

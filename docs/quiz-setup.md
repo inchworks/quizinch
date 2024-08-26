@@ -36,7 +36,7 @@ Change the order numbers to re-order questions after they have been set up.
 A question may include a picture, a sound clip, or a video clip for the media. Usually questions of one type would be grouped together into a picture round, a music round, etc. However this is not required.
 - Audio files can be uploaded as mp3, aac, flac, or m4a.
 - Video files can be uploaded as mp4 or mov.
-- All other file types are assumed to be pictures. jpg, jpeg, and png are recommended.
+- All other file types are assumed to be pictures. gif, jpg, jpeg, and png are recommended.
 
 ## Changes during the quiz
 You should not make changes during the quiz. However some changes can be made without the quiz restarting:
