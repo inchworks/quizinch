@@ -1,7 +1,7 @@
 # Raspberry Pi Setup
 
 ## Before installation
-- Set up a Raspberry Pi 4 or 400 with the current version of Raspberry Pi OS. See [raspberrypi.com][1].
+- Set up a Raspberry Pi 4 or 400 with Raspberry Pi OS Bullseye. See [raspberrypi.com][1]. (Version Bookworm is unlikely to work.)
 
 - Install Docker and Docker Compose. Check [docs.docker.com][2] for the latest instructions. At the time of writing, this was the recommended method:
     ```sh
