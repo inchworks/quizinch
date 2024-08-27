@@ -20,7 +20,7 @@ Additional displays for different purposes are supported using any devices that 
 The server software is written in Go for good performance, and installation is simplified by running it under Docker.
 The system does not need an internet connection.
 
-Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. 
+Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. (Raspberry Pi OS Bullseye is supported but not Bookworm.)
 
 [![Project Status: Inactive – The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 Version 1.0 is available on Docker Hub.
