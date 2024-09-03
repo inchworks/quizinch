@@ -43,7 +43,8 @@
 						</div>
 						<div class="col-md-10 offset-md-2 mb-2 media">
 							<label class="form-label">Audio-Visual</label>
-							<input type='hidden' class="mediaName" name='mediaName' value='{{ .MediaName }}'>
+							<input type='hidden' class="mediaName" name='mediaName' value='{{.MediaName}}'>
+							<input type='hidden' class="mediaVersion" name='mediaVersion' value='0'>
 							<div class="input-group">
 								<span class='input-group-text upload-name'>{{.MediaName}}</span>  
  								<label class='form-control upload-text {{.ChildValid "mediaName"}}' for='U{{ .ChildIndex }}' role='button'>Choose a photo or video...</label>
@@ -91,7 +92,7 @@
 
 {{ define "pagescripts" }}
    <script type="text/javascript" src='/static/js/multiforms-03.js'></script>
-   <script type="text/javascript" src='/static/js/upload-03.js'></script>
+   <script type="text/javascript" src='/static/js/upload-04.js'></script>
    <script>
 		// page-specific processing
 

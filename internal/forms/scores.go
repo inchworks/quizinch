@@ -20,7 +20,7 @@ package forms
 import (
 	"net/url"
 
-	"github.com/inchworks/webparts/multiforms"
+	"github.com/inchworks/webparts/v2/multiforms"
 )
 
 type Scores struct {

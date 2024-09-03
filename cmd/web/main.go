@@ -28,13 +28,13 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/inchworks/webparts/server"
+	"github.com/inchworks/webparts/v2/server"
 	"inchworks.com/quiz/internal/quiz"
 )
 
 // version and copyright
 const (
-	version = "1.0.4"
+	version = "1.0.5"
 	notice  = `
 	Copyright (C) Rob Burke inchworks.com, 2020.
 	This website software comes with ABSOLUTELY NO WARRANTY.

@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/inchworks/webparts/uploader"
+	"github.com/inchworks/webparts/v2/uploader"
 	"inchworks.com/quiz/internal/models"
 )
 

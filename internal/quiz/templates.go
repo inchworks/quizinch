@@ -23,8 +23,8 @@ import (
 	"time"
 
 	"github.com/inchworks/usage"
-	"github.com/inchworks/webparts/multiforms"
-	"github.com/inchworks/webparts/users"
+	"github.com/inchworks/webparts/v2/multiforms"
+	"github.com/inchworks/webparts/v2/users"
 	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
 )

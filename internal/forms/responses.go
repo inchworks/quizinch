@@ -21,7 +21,7 @@ import (
 	"database/sql"
 	"net/url"
 
-	"github.com/inchworks/webparts/multiforms"
+	"github.com/inchworks/webparts/v2/multiforms"
 
 	"inchworks.com/quiz/internal/models"
 )

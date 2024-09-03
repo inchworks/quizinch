@@ -26,8 +26,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inchworks/webparts/etx"
-
 	"inchworks.com/quiz/internal/forms"
 	"inchworks.com/quiz/internal/models"
 )
@@ -678,16 +676,4 @@ func (qs *QuizState) updatesNone() func() {
 		// release lock
 		qs.muQuiz.RUnlock()
 	}
-}
-
-// txBeginRound requests a round update as a new extended transaction.
-func (q *QuizState) txBeginRound(tx etx.TxId, req *OpUpdateRound) error {
-
-	// ## could log error
-	return q.app.tm.BeginNext(tx, q, OpRound, req)
-}
-
-// txShow requests a show update as a transaction, so that it will be done even if the server restarts.
-func (q *QuizState) txRound(req *OpUpdateRound, opType int) error {
-	return q.app.tm.SetNext(req.tx, q, opType, req)
 }
