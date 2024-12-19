@@ -8,7 +8,7 @@ version: '3'
 services:
 
   db:
-    image: mariadb:10.4
+    image: mariadb:11.4
     container_name: quiz_db
     expose:
       - 3306
@@ -18,6 +18,8 @@ services:
       MYSQL_DATABASE: quiz
       MYSQL_USER: server
       MYSQL_PASSWORD: "<server-password>"
+      MARIADB_AUTO_UPGRADE: 1
+      MARIADB_DISABLE_UPGRADE_BACKUP: 1
     volumes:
       - mysql:/var/lib/mysql
     logging:

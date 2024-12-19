@@ -78,11 +78,17 @@ func (app *Application) login(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
 
+	// renew session token on privilege level change, to prevent session fixation attack
+	if err := app.session.RenewToken(r.Context()); err != nil {
+		app.log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	
 	// remove user ID from the contest data
-	app.session.Remove(r, "authenticatedUserID")
+	app.session.Remove(r.Context(), "authenticatedUserID")
 
 	// flash message to confirm logged out
-	app.session.Put(r, "flash", "You are logged out")
+	app.session.Put(r.Context(), "flash", "You are logged out")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

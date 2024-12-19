@@ -168,7 +168,7 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, name stri
 	}
 
 	// common data for all pages
-	td.addDefaultData(app, r)
+	td.addDefaultData(app, r, strings.HasPrefix(name, "home-"))
 
 	// Retrieve the appropriate template set from the cache based on the page name
 	// (like `home.page.tmpl`).

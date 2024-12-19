@@ -73,7 +73,8 @@ type Question struct {
 }
 
 type Quiz struct {
-	Id int64
+	Id      int64
+	Version int
 
 	// quiz parameters
 	Title        string

@@ -49,10 +49,10 @@ func (app *Application) Routes() http.Handler {
 
 	// dynamic and static page handlers
 	if app.isOnline {
-		dynHs = alice.New(app.limitPage, app.session.Enable, app.noSurf, app.authenticate, app.logRequest)
+		dynHs = alice.New(app.limitPage, app.session.LoadAndSave, app.noSurf, app.authenticate, app.logRequest)
 		staticHs = alice.New(app.limitFile)
 	} else {
-		dynHs = alice.New(app.session.Enable, app.noSurf)
+		dynHs = alice.New(app.session.LoadAndSave, app.noSurf)
 		staticHs = alice.New()
 	}
 

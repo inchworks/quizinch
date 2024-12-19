@@ -101,7 +101,7 @@ func (app *Application) postFormResponses(w http.ResponseWriter, r *http.Request
 	// save changes
 	title, err := app.quizState.onEditResponses(nRound, nTeam, items)
 	if err == nil {
-		app.session.Put(r, "flash", title+" answers saved.")
+		app.session.Put(r.Context(), "flash", title+" answers saved.")
 		http.Redirect(w, r, pathToRespondWait(access, nTeam), http.StatusSeeOther)
 	} else {
 		http.Error(w, err.Error(), http.StatusBadRequest)

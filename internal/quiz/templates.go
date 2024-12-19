@@ -33,13 +33,13 @@ import (
 // - implements TemplateData interface so that render() can add data without knowing which template it has.
 
 type templateData interface {
-	addDefaultData(app *Application, r *http.Request)
+	addDefaultData(app *Application, r *http.Request, isHome bool)
 }
 
 type dataCommon struct {
 	Canonical  string // canonical domain
 	Flash      string // flash message
-	ParentHRef string
+	IsHome     bool   // home page
 
 	// To configure menus and displays, not to check authorisation
 	HasRemote   bool // has remote teams
@@ -49,9 +49,10 @@ type dataCommon struct {
 	IsTeam      bool // user is a team member
 }
 
-func (d *dataCommon) addDefaultData(app *Application, r *http.Request) {
+func (d *dataCommon) addDefaultData(app *Application, r *http.Request, isHome bool) {
 
-	d.Flash = app.session.PopString(r, "flash")
+	d.Flash = app.session.PopString(r.Context(), "flash")
+	d.IsHome = isHome
 
 	d.HasRemote = app.hasRemote
 

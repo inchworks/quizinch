@@ -201,7 +201,7 @@ func (app *Application) publishRound(w http.ResponseWriter, r *http.Request) {
 
 	// publish round
 	message := app.quizState.PublishRound(nRound, fromResp)
-	app.session.Put(r, "flash", message)
+	app.session.Put(r.Context(), "flash", message)
 
 	var path string
 	if fromResp {

@@ -56,16 +56,16 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// check for authenticated user in contest
-		exists := app.session.Exists(r, "authenticatedUserID")
+		exists := app.session.Exists(r.Context(), "authenticatedUserID")
 		if !exists {
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		// check user against database
-		user, err := app.userStore.Get(app.session.Get(r, "authenticatedUserID").(int64))
+		user, err := app.userStore.Get(app.session.Get(r.Context(), "authenticatedUserID").(int64))
 		if errors.Is(err, models.ErrNoRecord) || user.Status < users.UserActive {
-			app.session.Remove(r, "authenticatedUserID")
+			app.session.Remove(r.Context(), "authenticatedUserID")
 			next.ServeHTTP(w, r)
 			return
 		} else if err != nil {
@@ -414,7 +414,7 @@ func (app *Application) authAs(w http.ResponseWriter, r *http.Request, minRole i
 		if app.isAuthenticated(r, models.UserUnknown) {
 			http.Error(w, "User is not authorised for role", http.StatusUnauthorized)
 		} else {
-			app.session.Put(r, "redirectPathAfterLogin", r.URL.Path)
+			app.session.Put(r.Context(), "redirectPathAfterLogin", r.URL.Path)
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		}
 		return false

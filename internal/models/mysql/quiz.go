@@ -28,12 +28,12 @@ import (
 const (
 	quizInsert = `
 		INSERT INTO quiz
-		(title, organiser, n_tie_breakers, n_deferred, n_final_scores, n_winners, refresh, access, response_round, scoring_round)
-		VALUES (:title, :organiser, :n_tie_breakers, :n_deferred, :n_final_scores, :n_winners, :refresh, :access, :response_round, :scoring_round)
+		(version, title, organiser, n_tie_breakers, n_deferred, n_final_scores, n_winners, refresh, access, response_round, scoring_round)
+		VALUES (:version, :title, :organiser, :n_tie_breakers, :n_deferred, :n_final_scores, :n_winners, :refresh, :access, :response_round, :scoring_round)
 	`
 	quizUpdate = `
 		UPDATE quiz
-		SET title=:title, organiser=:organiser, n_tie_breakers=:n_tie_breakers,
+		SET version=:version, title=:title, organiser=:organiser, n_tie_breakers=:n_tie_breakers,
 			n_deferred=:n_deferred, n_final_scores=:n_final_scores, n_winners=:n_winners, refresh=:refresh, access=:access,
 			response_round=:response_round, scoring_round=:scoring_round
 		WHERE id=:id
