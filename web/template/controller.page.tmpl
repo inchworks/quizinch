@@ -19,12 +19,12 @@
 
 		<h2>Controller</h2>
 		
-		<form action='/control-start' method='POST'>
+		<form action='/control-start' method='POST' onsubmit='return confirmStart("{{.Val}}");'>
 			<input class="form-control" type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
 			<input class="form-control" type='hidden' name='display' value='C'>
 			<div class="row my-3">
 				<div class="col-md-3">
-					<button class="btn btn-primary" onclick='confirmStart("{{.Val}}")'>Start</button>
+					<button class="btn btn-primary">Start</button>
 				</div>
 				<div class="col-md-9">
 					Live quiz. When display shows, press SPACEBAR to step through questions and rounds.

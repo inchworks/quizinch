@@ -50,7 +50,7 @@ func (app *Application) controller(w http.ResponseWriter, r *http.Request) {
 	// has the quiz started?
 	// ## set scoring round to 0 before starting
 	started := ""
-	if app.quizState.quizCached.ScoringRound > 0 {
+	if app.quizState.quizCached.ScoringRound > 1 {
 		started = "Y"
 	}
 
