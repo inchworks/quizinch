@@ -87,7 +87,7 @@ br {
 
 .picture-container img {
 	height: 100%;
-	width: auto;
+	object-fit: contain;
 }
 
 .video-container {

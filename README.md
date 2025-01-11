@@ -32,9 +32,8 @@ For more information, including setup and configuration, see https://quizinch.co
 ## Acknowledgments
 
 Go Packages
-
+- [alexedwards/scs](https://github.com/alexedwards/scs/v2) HTTP session management.
 - [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) MySQL driver.
-- [golangcollege/sessions](https://github.com/golangcollege/sessions) HTTP session cookies.
 - [ilyakaznacheev/cleanenv](https://github.com/ilyakaznacheev/cleanenv) Read configuration file and environment variables.
 - [jmoiron/sqlx](https://github.com/jmoiron/sqlx) SQL library extensions.
 - [julienschmidt/httprouter](https://github.com/julienschmidt/httprouter) HTTP request router.
