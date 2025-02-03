@@ -198,7 +198,7 @@ func New(cfg *Configuration, errorLog *log.Logger, infoLog *log.Logger, threatLo
 	}
 
 	// initialise template cache
-	templates, err := stack.NewTemplates(pts, forApp, os.DirFS(filepath.Join(SitePath, "templates")), templateFuncs)
+	templates, err := stack.NewTemplatesLayered(templateFuncs, pts, forApp, os.DirFS(filepath.Join(SitePath, "templates")))
 	if err != nil {
 		errorLog.Fatal(err)
 	}
