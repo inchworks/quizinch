@@ -1,11 +1,22 @@
 #!/bin/bash
 
-# Enable the RPi to host a WiFi network
-sudo cp /srv/quizinch/setup/dhcpcd-client.conf /etc/dhcpcd-client.conf
-sudo cp /srv/quizinch/setup/dhcpcd-hostap.conf /etc/dhcpcd-hostap.conf
-sudo cp /srv/quizinch/setup/dnsmasq.conf /etc/dnsmasq.conf
-sudo mkdir -p /etc/hostapd
-sudo cp /srv/quizinch/setup/hostapd.conf /etc/hostapd/hostapd.conf
+# Use external Wi-Fi network if available
+sudo nmcli con modify preconfigured connection.autoconnect-priority 10
+
+# Host Wi-Fi external access point
+nmcli con delete access-point
+nmcli con add type wifi ifname wlan0 mode ap con-name access-point ssid QUIZ-RPI
+nmcli con modify access-point wifi.band bg
+nmcli con modify access-point wifi-sec.key-mgmt wpa-psk wifi-sec.psk "quizinch.ap"
+nmcli con modify access-point ipv4.method shared ipv4.address 192.168.4.1/24 ipv4.gateway 192.168.4.1
+nmcli con modify access-point ipv6.method disabled
+
+# Require WPA2
+sudo nmcli con modify access-point \
+    802-11-wireless-security.proto rsn \
+    802-11-wireless-security.group ccmp \
+    802-11-wireless-security.pairwise ccmp
+nmcli con up access-point
 
 # Start the RPi as an appliance with a menu to configure operation
 cp /srv/quizinch/setup/dot-bashrc ~/.bashrc

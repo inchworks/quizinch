@@ -1,22 +1,53 @@
 #!/bin/bash
 
+# The "3>&1 1>&2 2>&3 3>&-" mess switches stdout (1) and stderr (2) using a temporary file descriptor (3)
+# before closing 3. It is needed because dialog sends its output to stderr :-( and we'd like it as stdout.
+
+get_network () {
+    ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
+    ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
+}
+
+set_connection () {
+    # get current settings for connection
+    ssid1=$(nmcli -f ssid con show $con)
+    pw1=$(nmcli -f wifi-sec.psk con show $con)
+
+    values=$(dialog \
+        --separate-widget $'\n' \
+        --title "$dlg_title" \
+        --form "" \
+        0 0 0 \
+        "Name (SSID):" 1 1 "$ssid1" 1 10 30 0 \
+        "Password:" 2 1 "$pw1" 2 10 30 0  \
+        3>&1 1>&2 2>&3 3>&-)
+
+    if (($values != "")); then
+        # values from dialog
+        ssid1=$(echo "$values" | sed -n 1p)
+        pw1=$(echo "$values" | sed -n 2p)
+
+        # change settings
+        nmcli con modify $con ssid "$ssid1" wifi-sec.psk "$pw1"
+        nmcli reload
+    fi
+}
+
 show_menu () {
     height=0
     width=50
     menu_height=5
 
-    ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
-    ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
+    get_network
 
     # dialog preferred to Debian's whiptail, because it has timeout and allows exit code redefinition.
-    # The "3>&1 1>&2 2>&3" mess switches STDOUT and STDERR because dialog sends its output to STDERR :-(.
     # Redefining exit codes to match options.
     opt=$(DIALOG_ERROR=1 \
             DIALOG_ESC=1 \
-            DIALOG_CANCEL=5 \
-            DIALOG_EXTRA=6 \
-            DIALOG_HELP=6 \
-            DIALOG_ITEM_HELP=6 \
+            DIALOG_CANCEL=6 \
+            DIALOG_EXTRA=7 \
+            DIALOG_HELP=7 \
+            DIALOG_ITEM_HELP=7 \
             dialog \
             --clear \
             --backtitle "WiFi : $ssid, $HOSTNAME website : $ip_addrs" \
@@ -26,12 +57,13 @@ show_menu () {
             --menu "Choose one of the following options:" \
             $height $width $menu_height \
             1 "Start Quiz program" \
-            2 "Restart with QUIZ-RPI WiFi" \
-            3 "Restart and join QUIZ-AP WiFi" \
-            4 "Show network address" \
-            5 "Desktop" \
-            6 "Console" \
-            3>&1 1>&2 2>&3)
+            2 "Show network address" \
+            3 "Select external Wi-Fi access" \
+            4 "Set Quiz RPi hosted Wi-Fi" \
+            5 "Restart Wi-Fi"
+            6 "Desktop" \
+            7 "Console" \
+            3>&1 1>&2 2>&3 3>&-)
     ec=$?
 }
 
@@ -53,23 +85,8 @@ while true; do
         startx
         ;;
     2)
-        # enable host WiFi AP
-        sudo systemctl unmask hostapd
-	    sudo systemctl enable hostapd
-	    sudo cp /etc/dhcpcd-hostap.conf /etc/dhcpcd.conf
-        sudo systemctl reboot
-        ;;
-    3)
-        # disable host WiFI AP
-        sudo cp /etc/dhcpcd-client.conf /etc/dhcpcd.conf
-	    sudo systemctl disable hostapd
-	    sudo systemctl mask hostapd
-        sudo systemctl reboot
-        ;;
-    4)
         # show network address
-        ip_addrs=$(ip -o addr show up primary scope global wlan0 | while read -r num dev fam addr rest; do echo ${addr%/*}; done)
-        ssid=$(iw dev wlan0 info | grep ssid | awk '{print $2}')
+        get_network
         clear
         echo ""
         echo ""
@@ -79,12 +96,35 @@ while true; do
         echo ""
         read -n 1 -s -r -p "        Press any key to continue"
         ;;
+    3)
+        # select external network access
+        dlg_title="External Network"
+        con="preconfigured"
+        set_connection
+        ;;
+    4)
+        # set RPi AP network access
+        dlg_title="Quiz RPi Network"
+        con="access-point"
+        set_connection
+        ;;
     5)
+        # restart Wi-Fi
+        nmcli reload
+        clear
+        echo ""
+        echo ""
+        echo ""
+        echo "        Restarting Wi-Fi"
+        echo ""
+        read -n 1 -s -r -p "        Press any key to continue"
+        ;;
+    6)
         # remove browser and run full desktop
         rm -f ~/.xinitrc
         startx
         ;;
-    6)
+    7)
         # exit to command line console
         clear
         exit

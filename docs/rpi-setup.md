@@ -1,18 +1,11 @@
 # Raspberry Pi Setup
 
 ## Before installation
-- Set up a Raspberry Pi 4 or 400 with Raspberry Pi OS Bullseye. See [raspberrypi.com][1]. (Version Bookworm is unlikely to work.)
+- Set up a Raspberry Pi 4, 400, 5 or 500 with Raspberry Pi OS Bookworm 64-bit, or a later version. See [raspberrypi.com][1].
 
-- Install Docker and Docker Compose. Check [docs.docker.com][2] for the latest instructions. At the time of writing, this was the recommended method:
-    ```sh
-    cd ~/.
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    sudo usermod -aG docker $USER
-    newgrp docker
-    ```
+- Install Docker Engine. Check [docs.docker.com][2] for the latest instructions. At the time of writing, the instructions for Debian apply to Raspberry Pi OS 64-bit.
 
-You can check that Docker is installed successfully by: `docker run hello-world`.
+You can check that Docker is installed successfully by: `sudo docker run hello-world` and `docker compose version`.
 
 ## Install QuizInch
 A basic installation requires the creation of just one file on the server.
