@@ -22,7 +22,7 @@ The system does not need an internet connection.
 
 Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. (Raspberry Pi OS Bullseye is supported but not Bookworm.)
 
-[![Project Status: Moved to https://codeberg.org/inchworks/quizinch – The project has been moved to a new location, and the version at that location should be considered authoritative.](https://www.repostatus.org/badges/latest/moved.svg)](https://www.repostatus.org/#moved) to [[http://example.com](https://codeberg.org/inchworks/quizinch)]([http://example.com](https://codeberg.org/inchworks/quizinch))
+[![Project Status: Moved to https://codeberg.org/inchworks/quizinch – The project has been moved to a new location, and the version at that location should be considered authoritative.](https://www.repostatus.org/badges/latest/moved.svg)](https://www.repostatus.org/#moved) to [https://codeberg.org/inchworks/quizinch](https://codeberg.org/inchworks/quizinch).
 
 Version 1.0 is available on Docker Hub.
 
