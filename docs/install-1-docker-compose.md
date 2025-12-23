@@ -3,8 +3,6 @@
 Copy this example, and save it as `docker-compose.yml` in the server directory.
 
 ```yml
-version: '3'
-
 services:
 
   db:
