@@ -2,7 +2,7 @@
 
 <div align="center">
   <h3>
-    <a href="https://quizinch.com">Documentation</a>
+    <a href="https://inchworks.com/info/quizinch">Documentation</a>
     <span> | </span>
     <a href="https://hub.docker.com/r/inchworks/quizinch">Docker Repository</a>
   </h3>
@@ -24,8 +24,6 @@ Configuration files are provided to turn a Raspberry Pi into a quiz appliance th
 
 [![Project Status: Moved to https://codeberg.org/inchworks/quizinch – The project has been moved to a new location, and the version at that location should be considered authoritative.](https://www.repostatus.org/badges/latest/moved.svg)](https://www.repostatus.org/#moved) to [https://codeberg.org/inchworks/quizinch](https://codeberg.org/inchworks/quizinch).
 
-Version 1.0 is available on Docker Hub.
+Version 1.1 is available on Docker Hub.
 
-_It has been used and refined over a number of years to manage a Primary Schools Quiz for a Rotary Club. If you are thinking of using it, I suggest you contact me at support@quizinch.com._
-
-For more information, including setup and configuration, see https://quizinch.com.
+For more information, including setup and configuration, see https://inchworks.com/info/quizinch.

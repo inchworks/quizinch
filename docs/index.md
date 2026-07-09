@@ -5,11 +5,6 @@ At a minimum it needs two computers:
 1. A laptop or Raspberry Pi connected to the digital projector at a venue, runnning the QuizInch server.
 1. A laptop to enter scores, running just a web browser and connected to the first computer via WiFi.
 
-Additional displays for different purposes are supported using any devices that have a web browser.  
+Additional displays for other functions are supported using any devices that have a web browser. Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. 
 
-The server software is written in Go for good performance, and installation is simplified by running it under Docker.
-The system does not need an internet connection.
-
-Configuration files are provided to turn a Raspberry Pi into a quiz appliance that starts automatically and provides a dedicated WiFi network. 
-
-_It has been used and refined over a number of years to manage a Primary Schools Quiz for a Rotary Club. If you are thinking of using it, I suggest you contact me at support@quizinch.com._
+Full documentation is provided on [inchworks.com/info/quizinch](https://inchworks.com/info/quizinch).
